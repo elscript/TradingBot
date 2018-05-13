@@ -11,8 +11,9 @@ namespace TestingConsole
     /// </summary>
     public class DataSample
     {
-        public DataSample()
+        public DataSample(BitfinexCandle candle)
         {
+            Candle = candle;
             Indicators = new Dictionary<string, IIndicator>();    
         }
 
@@ -29,7 +30,26 @@ namespace TestingConsole
         /// <summary>
         /// Данные свечи
         /// </summary>
-        public BitfinexCandle candle { get; set; }
+        public BitfinexCandle Candle { get; private set; }
+
+        /// <summary>
+        /// Типичная цена
+        /// </summary>
+        public decimal TypicalPrice
+        {
+            get
+            {
+                return (Candle.Low + Candle.High + Candle.Close) / 3;
+            }
+        }
+
+        /// <summary>
+        /// Чистый денежный поток
+        /// </summary>
+        public decimal RawMoneyFlow
+        {
+            get { return (TypicalPrice * Candle.Volume); } // 0 if null
+        }
 
         /// <summary>
         /// Коллекция индикаторов

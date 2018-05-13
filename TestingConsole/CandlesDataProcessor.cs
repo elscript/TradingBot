@@ -8,17 +8,16 @@ namespace TestingConsole
 {
     public class CandlesDataProcessor
     {
-        private IList<DataSample> samples;
-        public List<BitfinexCandle> Candles { get; }
+        public IList<DataSample> Samples { get; private set; }
 
         public CandlesDataProcessor(IList<BitfinexCandle> candles)
         {
-            Candles = candles.OrderByDescending(t => t.Timestamp).ToList<BitfinexCandle>();
+            var orderedCandles = candles.OrderBy(t => t.Timestamp).ToList<BitfinexCandle>();
 
-            samples = new List<DataSample>();
-            foreach (var candle in candles)
+            Samples = new List<DataSample>();
+            foreach (var candle in orderedCandles)
             {
-                samples.Add(new DataSample());
+                Samples.Add(new DataSample(candle));
             }
         }
 
@@ -27,25 +26,28 @@ namespace TestingConsole
         /// </summary>
         /// <param name="shortEMAPeriod"></param>
         /// <param name="longEMAPeriod"></param>
-        /// <param name="macdEMAPeriod"></param>
         public void CalculateEMAs(int shortEMAPeriod, int longEMAPeriod)
         {
-            foreach (var sample in samples)
+            foreach (var sample in Samples)
             {
-                sample.EMAshort = new EMA(shortEMAPeriod, samples, sample, EMAKind.Short);
-                sample.EMAlong = new EMA(longEMAPeriod, samples, sample, EMAKind.Long);
+                sample.EMAshort = new EMA(shortEMAPeriod, Samples, sample, EMAKind.Short);
+                sample.EMAlong = new EMA(longEMAPeriod, Samples, sample, EMAKind.Long);
             }
         }
 
         /// <summary>
         /// Инициализация и расчет индикаторов
         /// </summary>
-        public void CalculateIndicators(int macdEMAPeriod)
+        /// <param name="macdEMAPeriod">Период для сглаживающей EMA</param>
+        public void CalculateIndicators(int macdEMAPeriod, int mfiPeriod)
         {
-            foreach (var sample in samples)
+            foreach (var sample in Samples)
             {
-                var macd = new MACDIndicator(sample, samples, macdEMAPeriod);
+                var macd = new MACDIndicator(sample, Samples, macdEMAPeriod);
                 sample.Indicators.Add("macd", macd);
+
+                var mfi = new MFIIndicator(sample, Samples, mfiPeriod);
+                sample.Indicators.Add("mfi", mfi);
 
                 foreach (var indicator in sample.Indicators.Values)
                 {

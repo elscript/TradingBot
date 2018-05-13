@@ -14,7 +14,7 @@ namespace TestingConsole
         /// <summary>
         /// Период
         /// </summary>
-        int Period { get; }
+        public int Period { get; }
 
         /// <summary>
         /// Тип скользящей
@@ -67,12 +67,12 @@ namespace TestingConsole
                 if (indexOfCandle == Period - 1)
                 {
                     // This is our seed EMA, using SMA of EMA1 Period for EMA 1
-                    result = samples.Where(a => a.candle.Timestamp <= sample.candle.Timestamp).OrderByDescending(a => a.candle.Timestamp)
-                        .Take(Period).Average(a => Convert.ToDouble(a.candle.Close));
+                    result = samples.Where(a => a.Candle.Timestamp <= sample.Candle.Timestamp).OrderByDescending(a => a.Candle.Timestamp)
+                        .Take(Period).Average(a => Convert.ToDouble(a.Candle.Close));
                 }
                 else
                 {
-                    result = (Convert.ToDouble(sample.candle.Close) - lastEMA.Value) * EMAMultiplier + lastEMA.Value;
+                    result = (Convert.ToDouble(sample.Candle.Close) - lastEMA.Value) * EMAMultiplier + lastEMA.Value;
                 }
             }
 
