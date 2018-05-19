@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Bitfinex.Net;
+using Bitfinex.Net.Objects;
 using CryptoExchange.Net.Authentication;
 
 namespace TestingConsole
@@ -30,15 +33,25 @@ namespace TestingConsole
             }
             */
 
-            var candles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.FiveMinute, "tNEOUSD", 1000, DateTime.Now.AddDays(-30), DateTime.Now);
-            foreach (var candle in candles.Data)
+            var candles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.FiveMinute, "tIOTUSD", 1000, DateTime.Now.AddDays(-30), DateTime.Now);
+            IEnumerable<BitfinexCandle> candlesData = candles.Data.ToList();
+            for (int i = 0; i < 9; i++)
             {
-                Console.WriteLine($"Timestamp : {candle.Timestamp}; Open : {candle.Open}; Close : {candle.Close}; Low : {candle.Low}; High : {candle.High}; Volume : {candle.Volume}");
+                var data = candlesData.ToList();
+                var morecandles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.FiveMinute, "tIOTUSD", 1000, null, data.Last().Timestamp.AddMinutes(-5));
+                candlesData = data.Concat(morecandles.Data);
             }
+            
+            
+
+            //foreach (var candle in candles.Data)
+            //{
+            //    Console.WriteLine($"Timestamp : {candle.Timestamp}; Open : {candle.Open}; Close : {candle.Close}; Low : {candle.Low}; High : {candle.High}; Volume : {candle.Volume}");
+            //}
 
 
-            var strategyPlayer = new StrategyPlayer(new MACDandMFIStrategy(1, true, false));
-            var percentOfProfit = strategyPlayer.Run(candles.Data);
+            var strategyPlayer = new StrategyPlayer(new MACDandMFIStrategy(new decimal(2), true, true));
+            var percentOfProfit = strategyPlayer.Run(candlesData.ToList()) * 100;
             Console.WriteLine($"PercentOfProfit : {percentOfProfit}");
         }
 

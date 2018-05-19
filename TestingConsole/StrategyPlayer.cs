@@ -18,14 +18,14 @@ namespace TestingConsole
         }
 
         /// <summary>
-        /// 
+        /// Запуск стратегии
         /// </summary>
-        /// <param name="candles"></param>
-        /// <returns>Кол-во процентов от депозита, полученных с использованием стратегии</returns>
+        /// <param name="candles">Свечи</param>
+        /// <returns>Доля профита, полученного с использованием стратегии</returns>
         public decimal Run(IList<BitfinexCandle> candles)
         {
             PlayedPositions.Clear();
-            decimal percent = 0;
+            decimal profitRate = 0;
             var processor = new CandlesDataProcessor(candles);
             processor.CalculateEMAs(12, 26);
             processor.CalculateIndicators(9, 14);
@@ -83,12 +83,12 @@ namespace TestingConsole
             foreach (var position in PlayedPositions)
             {
                 if (position.Direction == PositionDirection.Long)
-                    percent += (position.ClosePrice - position.OpenPrice) / position.OpenPrice;
+                    profitRate += (position.ClosePrice - position.OpenPrice) / position.OpenPrice;
                 else if (position.Direction == PositionDirection.Short)
-                    percent += (position.ClosePrice - position.OpenPrice) / position.ClosePrice;
+                    profitRate += (position.OpenPrice - position.ClosePrice) / position.OpenPrice;
             }
 
-            return percent;
+            return profitRate;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace TestingConsole
         {
         }
 
-        public MACDandMFIStrategy(int maxLoosePercentage, bool allowLong, bool allowShort) : this()
+        public MACDandMFIStrategy(decimal maxLoosePercentage, bool allowLong, bool allowShort) : this()
         {
             MaxLoosePercentage = maxLoosePercentage;
             AllowLong = allowLong;
@@ -23,7 +23,7 @@ namespace TestingConsole
         /// <summary>
         /// Максимально допустимый процент потерь с позиции
         /// </summary>
-        private int MaxLoosePercentage { get; set; }
+        private decimal MaxLoosePercentage { get; set; }
 
         /// <summary>
         /// Разрешать лонги
@@ -38,8 +38,8 @@ namespace TestingConsole
 
         public bool BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice)
         {
-            // Проверяем, не сработал ли кастомный стоплосс
-            if (lastSellPrice != null && sample.Candle.Close > lastSellPrice)
+            // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
+            if (lastSellPrice != null && sample.Candle.Close > lastSellPrice + lastSellPrice * (MaxLoosePercentage / 100))
             {
                 return true;
             }
@@ -74,8 +74,8 @@ namespace TestingConsole
 
         public bool SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice)
         {
-            // Проверяем, не сработал ли кастомный стоплосс
-            if (lastBuyPrice != null && sample.Candle.Close < lastBuyPrice)
+            // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
+            if (lastBuyPrice != null && sample.Candle.Close < lastBuyPrice - lastBuyPrice * (MaxLoosePercentage / 100))
             {
                 return true;
             }
