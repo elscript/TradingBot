@@ -33,25 +33,29 @@ namespace TestingConsole
             }
             */
 
-            var candles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.FiveMinute, "tIOTUSD", 1000, DateTime.Now.AddDays(-30), DateTime.Now);
+            decimal percentOfProfit = 0;
+
+            var candles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.FiveteenMinute, "tIOTUSD", 1000, DateTime.Now.AddDays(-30), DateTime.Now.ToUniversalTime());
             IEnumerable<BitfinexCandle> candlesData = candles.Data.ToList();
-            for (int i = 0; i < 9; i++)
+
+            for (int i = 0; i < 15; i++)
             {
                 var data = candlesData.ToList();
-                var morecandles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.FiveMinute, "tIOTUSD", 1000, null, data.Last().Timestamp.AddMinutes(-5));
+                var morecandles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.FiveteenMinute, "tIOTUSD", 1000, null, data.Last().Timestamp.AddMinutes(-5));
                 candlesData = data.Concat(morecandles.Data);
             }
-            
-            
 
-            //foreach (var candle in candles.Data)
-            //{
-            //    Console.WriteLine($"Timestamp : {candle.Timestamp}; Open : {candle.Open}; Close : {candle.Close}; Low : {candle.Low}; High : {candle.High}; Volume : {candle.Volume}");
-            //}
+            for (int k = 1; k < 6; k++)
+            {
+                var k1 = k;
+                var filteredData = candlesData.Where(c => c.Timestamp >= new DateTime(2018, k1, 1, 12, 50, 0) && c.Timestamp <= new DateTime(2018, k1 + 1, 1, 12, 50, 0));
 
+                //var strategyPlayer = new StrategyPlayer(new MACDandMFIStrategy(new decimal(0.5), false, true));
+                var strategyPlayer = new StrategyPlayer(new LastForwardThenPreviousStrategy(new decimal(0), true, true));
 
-            var strategyPlayer = new StrategyPlayer(new MACDandMFIStrategy(new decimal(2), true, true));
-            var percentOfProfit = strategyPlayer.Run(candlesData.ToList()) * 100;
+                percentOfProfit += strategyPlayer.Run(filteredData.ToList()) * 100;
+            }
+
             Console.WriteLine($"PercentOfProfit : {percentOfProfit}");
         }
 

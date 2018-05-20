@@ -34,7 +34,7 @@ namespace TestingConsole
             {
                 if (_position == null)
                 {
-                    if (_strategy.BuySignal(processor.Samples, sample, null))
+                    if (_strategy.BuySignal(processor.Samples, sample, null).SignalTriggered)
                     {
                         _position = new PositionInternal();
                         _position.OpenPrice = sample.Candle.Close;
@@ -44,38 +44,40 @@ namespace TestingConsole
                 }
                 else if (_position.Direction == PositionDirection.Long)
                 {
-                    if (_strategy.SellSignal(processor.Samples, sample, _position.OpenPrice))
+                    var signalResult = _strategy.SellSignal(processor.Samples, sample, _position.OpenPrice);
+                    if (signalResult.SignalTriggered)
                     {
-                        _position.ClosePrice = sample.Candle.Close;
+                        _position.ClosePrice = signalResult.ByStopLoss ? _position.OpenPrice - _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
                         _position.CloseTimestamp = sample.Candle.Timestamp;
                         PlayedPositions.Add(_position);
                         _position = null;
-                    }
 
-                    if (_strategy.AllowShort)
-                    {
-                        _position = new PositionInternal();
-                        _position.OpenPrice = sample.Candle.Close;
-                        _position.Direction = PositionDirection.Short;
-                        _position.OpenTimestamp = sample.Candle.Timestamp;
-                    }
+                        if (_strategy.AllowShort)
+                        {
+                            _position = new PositionInternal();
+                            _position.OpenPrice = sample.Candle.Close;
+                            _position.Direction = PositionDirection.Short;
+                            _position.OpenTimestamp = sample.Candle.Timestamp;
+                        }
+                    }               
                 }
                 else if (_position.Direction == PositionDirection.Short)
                 {
-                    if (_strategy.BuySignal(processor.Samples, sample, _position.OpenPrice))
+                    var signalResult = _strategy.BuySignal(processor.Samples, sample, _position.OpenPrice);
+                    if (signalResult.SignalTriggered)
                     {
-                        _position.ClosePrice = sample.Candle.Close;
+                        _position.ClosePrice = signalResult.ByStopLoss ? _position.OpenPrice + _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
                         _position.CloseTimestamp = sample.Candle.Timestamp;
                         PlayedPositions.Add(_position);
                         _position = null;
-                    }
 
-                    if (_strategy.AllowLong)
-                    {
-                        _position = new PositionInternal();
-                        _position.OpenPrice = sample.Candle.Close;
-                        _position.Direction = PositionDirection.Long;
-                        _position.OpenTimestamp = sample.Candle.Timestamp;
+                        if (_strategy.AllowLong)
+                        {
+                            _position = new PositionInternal();
+                            _position.OpenPrice = sample.Candle.Close;
+                            _position.Direction = PositionDirection.Long;
+                            _position.OpenTimestamp = sample.Candle.Timestamp;
+                        }
                     }
                 }
             }

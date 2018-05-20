@@ -16,7 +16,7 @@ namespace TestingConsole
         /// <param name="sample">Текущий сэмпл</param>
         /// <param name="lastSellPrice">Цена предыдущей предшествующией продажи, если была, иначе null</param>
         /// <returns></returns>
-        bool BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice);
+        SignalResult BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice);
 
         /// <summary>
         /// Сигнал на продажу
@@ -25,7 +25,7 @@ namespace TestingConsole
         /// <param name="sample">Текущий сэмпл</param>
         /// <param name="lastBuyPrice">Цена предыдущей предшествующией покупки, если была, иначе null</param>
         /// <returns></returns>
-        bool SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice);
+        SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice);
 
         /// <summary>
         /// Стратегия позволяет совершать Long-сделки
@@ -36,5 +36,10 @@ namespace TestingConsole
         /// Стратегия позволяет совершать Short-сделки
         /// </summary>
         bool AllowShort { get; }
+
+        /// <summary>
+        /// Максимально допустимый процент потерь с позиции
+        /// </summary>
+        decimal MaxLoosePercentage { get; }
     }
 }

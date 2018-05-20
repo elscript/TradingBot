@@ -58,7 +58,8 @@ namespace TestingConsole
                 decimal? PositiveFlow = Samples.Where(a => a.Candle.Timestamp <= Sample.Candle.Timestamp).OrderByDescending(a => a.Candle.Timestamp).Take(MFIPeriod).Where(a => ((MFIIndicator)a.Indicators["mfi"]).MoneyFlowChange > 0).Sum(a => a.RawMoneyFlow);
                 decimal? NegativeFlow = Samples.Where(a => a.Candle.Timestamp <= Sample.Candle.Timestamp).OrderByDescending(a => a.Candle.Timestamp).Take(MFIPeriod).Where(a => ((MFIIndicator)a.Indicators["mfi"]).MoneyFlowChange < 0).Sum(a => a.RawMoneyFlow);
 
-                MoneyFlowRatio = PositiveFlow / NegativeFlow;
+                if (NegativeFlow != 0)
+                    MoneyFlowRatio = PositiveFlow / NegativeFlow;
 
                 MFI = 100 - (100 / (1 + MoneyFlowRatio));
             }

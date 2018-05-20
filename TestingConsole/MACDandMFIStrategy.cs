@@ -23,7 +23,7 @@ namespace TestingConsole
         /// <summary>
         /// Максимально допустимый процент потерь с позиции
         /// </summary>
-        private decimal MaxLoosePercentage { get; set; }
+        public decimal MaxLoosePercentage { get; private set; }
 
         /// <summary>
         /// Разрешать лонги
@@ -36,12 +36,16 @@ namespace TestingConsole
         public bool AllowShort { get; set; }
 
 
-        public bool BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice)
+        public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice)
         {
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
             if (lastSellPrice != null && sample.Candle.Close > lastSellPrice + lastSellPrice * (MaxLoosePercentage / 100))
             {
-                return true;
+                return new SignalResult()
+                {
+                    SignalTriggered = true,
+                    ByStopLoss = true
+                };
             }
 
             // Если MFI выходит из зоны перепроданности
@@ -69,15 +73,22 @@ namespace TestingConsole
                 }
             }
 
-            return mfiCheckPassed && macdCheckPassed;
+            return new SignalResult() {
+                SignalTriggered = mfiCheckPassed && macdCheckPassed,
+                ByStopLoss = false
+            };
         }
 
-        public bool SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice)
+        public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice)
         {
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
             if (lastBuyPrice != null && sample.Candle.Close < lastBuyPrice - lastBuyPrice * (MaxLoosePercentage / 100))
             {
-                return true;
+                return new SignalResult()
+                {
+                    SignalTriggered = true,
+                    ByStopLoss = true
+                };
             }
 
             // Если MFI выходит из зоны перепроданности
@@ -105,7 +116,11 @@ namespace TestingConsole
                 }
             }
 
-            return mfiCheckPassed && macdCheckPassed;
+            return new SignalResult()
+            {
+                SignalTriggered = mfiCheckPassed && macdCheckPassed,
+                ByStopLoss = false
+            };
         }
     }
 }
