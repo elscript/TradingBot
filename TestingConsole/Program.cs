@@ -15,7 +15,7 @@ namespace TestingConsole
             var client = new BitfinexClient(
                 new BitfinexClientOptions() {
                     ApiCredentials = new ApiCredentials(
-                        key: "", 
+                        key: "",
                         secret: "")
                 });
 
@@ -36,13 +36,13 @@ namespace TestingConsole
             decimal percentOfProfit = 0;
             var positions = new List<PositionInternal>();
 
-            var candles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.ThirtyMinute, "tIOTUSD", 1000, DateTime.Now.AddDays(-30), DateTime.Now.ToUniversalTime());
+            var candles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.ThirtyMinute, "tEOSUSD", 1000, DateTime.Now.AddDays(-30), DateTime.Now.ToUniversalTime());
             IEnumerable<BitfinexCandle> candlesData = candles.Data.ToList();
 
             for (int i = 0; i < 10; i++)
             {
                 var data = candlesData.ToList();
-                var morecandles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.ThirtyMinute, "tIOTUSD", 1000, null, data.Last().Timestamp.AddMinutes(-5));
+                var morecandles = client.GetCandles(Bitfinex.Net.Objects.TimeFrame.ThirtyMinute, "tEOSUSD", 1000, null, data.Last().Timestamp.AddMinutes(-5));
                 candlesData = data.Concat(morecandles.Data);
             }
             decimal deposit = 100;
