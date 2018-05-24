@@ -32,13 +32,14 @@ namespace TestingConsole
                 {
                     var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.High;
 
-                    if (sample.Candle.Close >
-                        stopLossExtremumPrice + stopLossExtremumPrice * (MaxLoosePercentage / 100))
-                        return new SignalResult()
+                    if (sample.Candle.Close > stopLossExtremumPrice + stopLossExtremumPrice * (MaxLoosePercentage / 100))
+                    {    return new SignalResult()
                         {
                             SignalTriggered = true,
                             ByStopLoss = true
                         };
+
+                    }
                 }
             }
 
@@ -78,13 +79,14 @@ namespace TestingConsole
                 {
                     var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.Low;
 
-                    if (sample.Candle.Close <
-                        stopLossExtremumPrice - stopLossExtremumPrice * (MaxLoosePercentage / 100))
+                    if (sample.Candle.Close < stopLossExtremumPrice - stopLossExtremumPrice * (MaxLoosePercentage / 100))
+                    {
                         return new SignalResult()
                         {
                             SignalTriggered = true,
                             ByStopLoss = true
                         };
+                    }
                 }
             }
 

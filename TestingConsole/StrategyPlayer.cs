@@ -27,8 +27,8 @@ namespace TestingConsole
             PlayedPositions.Clear();
             decimal profitRate = 0;
             var processor = new CandlesDataProcessor(candles);
-            processor.CalculateEMAs(12, 26);
-            processor.CalculateIndicators(9, 14);
+            //processor.CalculateEMAs(12, 26);
+            //processor.CalculateIndicators(9, 14);
 
             foreach (var sample in processor.Samples)
             {
