@@ -10,10 +10,12 @@ namespace TradingBot.Core
     public class RealtimeStrategyPlayer : StrategyPlayer
     {
         private Action _openPositionAction;
+        private Action _closePositionAction;
 
         public RealtimeStrategyPlayer(IStrategy strategy, Action openPositionAction, Action closePositionAction) : base(strategy)
         {
             _openPositionAction = openPositionAction;
+            _closePositionAction = closePositionAction;
         }
 
         protected override void OnOpenPosition(PositionInternal position)
@@ -23,7 +25,7 @@ namespace TradingBot.Core
 
         protected override void OnClosePosition(PositionInternal position)
         {
-            throw new NotImplementedException();
+            _closePositionAction();
         }
 
         protected override void RunStrategy(CandlesDataProcessor processor)

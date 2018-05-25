@@ -18,7 +18,7 @@ namespace TradingBot.Core
 
         protected override void OnClosePosition(PositionInternal position)
         {
-            throw new NotImplementedException();
+            
         }
 
         protected override void RunStrategy(CandlesDataProcessor processor)
