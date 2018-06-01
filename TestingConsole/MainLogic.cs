@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Timers;
 using Bitfinex.Net.Objects;
 using TradingBot.Core;
+using Timer = System.Threading.Timer;
 
 namespace TestingConsole
 {
@@ -17,7 +20,12 @@ namespace TestingConsole
             _bitfinexManager = bitfinexManager;
         }
 
-        public void Run()
+        public void Run(string ticker)
+        {
+            var timer = new Timer(RunIteration, null, 0, 10000);
+        }
+
+        private void RunIteration(object state)
         {
             try
             {

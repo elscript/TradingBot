@@ -35,6 +35,7 @@ namespace TestingConsole
 
             var tester = new StrategyTester();
             tester.TestStrategy(client);
+
         }
 
         
