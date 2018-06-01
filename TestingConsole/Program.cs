@@ -12,15 +12,13 @@ namespace TestingConsole
     {
         static void Main(string[] args)
         {
-            var client = new BitfinexClient(
-                new BitfinexClientOptions() {
-                    ApiCredentials = new ApiCredentials(
-                        key: "",
-                        secret: "")
-                });
+            var tester = new StrategyTester(
+                new BitfinexManager(
+                    "",
+                    ""
+                )
+            );              
 
-            var tester = new StrategyTester();
-            tester.TestStrategy(new BitfinexManager("", ""));
             tester.Run();
         }
 

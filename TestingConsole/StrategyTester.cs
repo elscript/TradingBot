@@ -12,7 +12,7 @@ namespace TestingConsole
     {
         private BitfinexManager _bitfinexManager;
 
-        public void TestStrategy(BitfinexManager bitfinexManager)
+        public StrategyTester(BitfinexManager bitfinexManager)
         {
             _bitfinexManager = bitfinexManager;
         }
