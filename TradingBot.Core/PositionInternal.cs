@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TestingConsole
+namespace TradingBot.Core
 {
     public class PositionInternal
     {
@@ -15,5 +15,9 @@ namespace TestingConsole
         public DateTime CloseTimestamp { get; set; }
 
         public PositionDirection Direction { get; set; }
+
+        public string Ticker { get; set; }
+
+        public int Amount { get; set; }
     }
 }

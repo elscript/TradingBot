@@ -2,19 +2,24 @@
 using System.Collections.Generic;
 using System.Text;
 using Bitfinex.Net.Objects;
+using TradingBot.Core;
+using System.Linq;
 
-namespace TestingConsole
+namespace TradingBot.Core
 {
     public abstract class StrategyPlayer
     {
         private PositionInternal _position;
         private IStrategy _strategy;
+        private IDataProvider _provider;
+        
         public IList<PositionInternal> PlayedPositions { get; private set; }
         public decimal ProfitRate { get; protected set; }
 
-        public StrategyPlayer(IStrategy strategy)
+        public StrategyPlayer(IStrategy strategy, IDataProvider dataProvider)
         {
             _strategy = strategy;
+            _provider = dataProvider;
             PlayedPositions = new List<PositionInternal>();
         }
 
@@ -22,12 +27,10 @@ namespace TestingConsole
 
         protected abstract void OnClosePosition(PositionInternal position);
 
-        protected abstract void RunStrategy(CandlesDataProcessor processor);
-
-        protected abstract void CalculateProfitRate();
-
-        protected void DoMainLogic(IList<DataSample> samples, DataSample sample)
+        private void Execute(IList<DataSample> samples)
         {
+            var sample = samples.Last();
+
             if (_position == null)
             {
                 if (_strategy.BuySignal(samples, sample, null).SignalTriggered)
@@ -45,7 +48,7 @@ namespace TestingConsole
                 var signalResult = _strategy.SellSignal(samples, sample, _position.OpenPrice);
                 if (signalResult.SignalTriggered)
                 {
-                    ClosePosition(PositionDirection.Long, signalResult, sample);
+                    ClosePosition(PositionDirection.Long, signalResult.ByStopLoss, sample);
 
                     if (_strategy.AllowShort)
                     {
@@ -58,7 +61,7 @@ namespace TestingConsole
                 var signalResult = _strategy.BuySignal(samples, sample, _position.OpenPrice);
                 if (signalResult.SignalTriggered)
                 {
-                    ClosePosition(PositionDirection.Short, signalResult, sample);
+                    ClosePosition(PositionDirection.Short, signalResult.ByStopLoss, sample);
 
                     if (_strategy.AllowLong)
                     {
@@ -77,12 +80,12 @@ namespace TestingConsole
             this.OnOpenPosition(_position);
         }
 
-        private void ClosePosition(PositionDirection direction, SignalResult signalResult, DataSample sample)
+        private void ClosePosition(PositionDirection direction, bool byStopLoss, DataSample sample)
         {
             if (direction == PositionDirection.Long)
-                _position.ClosePrice = signalResult.ByStopLoss ? _position.OpenPrice - _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
+                _position.ClosePrice = byStopLoss ? _position.OpenPrice - _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
             else if (direction == PositionDirection.Short)
-                _position.ClosePrice = signalResult.ByStopLoss ? _position.OpenPrice + _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
+                _position.ClosePrice = byStopLoss ? _position.OpenPrice + _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
             _position.CloseTimestamp = sample.Candle.Timestamp;
             PlayedPositions.Add(_position);
             this.OnClosePosition(_position);
@@ -92,17 +95,38 @@ namespace TestingConsole
         /// <summary>
         /// Запуск стратегии
         /// </summary>
-        /// <param name="candles">Свечи</param>
-        /// <returns>Доля профита, полученного с использованием стратегии</returns>
-        public void Run(IList<BitfinexCandle> candles)
+        /// <param name="ticker">Валютная пара</param>
+        public void Run(string ticker)
         {
-            var processor = new CandlesDataProcessor(candles);
+            ProfitRate = 0;
+            PlayedPositions.Clear();
+
+            while (true)
+            {
+                Execute(PrepareData(_provider.GetData(ticker)));
+            }
+        }
+
+        private IList<DataSample> PrepareData(IList<BitfinexCandle> candles)
+        {
+            return new CandlesDataProcessor(candles).Samples;
             //processor.CalculateEMAs(12, 26);
             //processor.CalculateIndicators(9, 14);
+        }
 
-            RunStrategy(processor);
-
-            CalculateProfitRate();
+        /// <summary>
+        /// Расчет доли прибыли
+        /// </summary>
+        private void CalculateProfitRate()
+        {
+            ProfitRate = 0;
+            foreach (var position in PlayedPositions)
+            {
+                if (position.Direction == PositionDirection.Long)
+                    ProfitRate += (position.ClosePrice - position.OpenPrice) / position.OpenPrice;
+                else if (position.Direction == PositionDirection.Short)
+                    ProfitRate += (position.OpenPrice - position.ClosePrice) / position.OpenPrice;
+            }
         }
     }
 }

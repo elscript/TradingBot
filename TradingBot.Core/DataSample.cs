@@ -4,7 +4,7 @@ using System.Text;
 using System.Linq;
 using Bitfinex.Net.Objects;
 
-namespace TestingConsole
+namespace TradingBot.Core
 {
     /// <summary>
     /// Полный кусок данных, включая данные свечи, EMA, MACD, MFI

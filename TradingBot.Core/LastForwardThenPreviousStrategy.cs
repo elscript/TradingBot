@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TestingConsole
+namespace TradingBot.Core
 {
     /// <summary>
     /// Стратегия, основанная на приниципе "каждый следующий максимум выше предыдущего и каждый следующий минимум выше предыдущего"

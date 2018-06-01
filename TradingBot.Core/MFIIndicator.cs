@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TestingConsole
+namespace TradingBot.Core
 {
     public class MFIIndicator : IIndicator
     {

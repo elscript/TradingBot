@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Bitfinex.Net.Objects;
 
-namespace TestingConsole
+namespace TradingBot.Core
 {
     /// <summary>
     /// Индикатор MACD
