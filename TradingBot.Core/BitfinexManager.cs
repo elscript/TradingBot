@@ -40,20 +40,20 @@ namespace TradingBot.Core
         /// <returns>Список свечей</returns>
         public IList<BitfinexCandle> GetData(string ticker, TimeFrame timeFrame, int amount)
         {
-            var candles = _client.GetCandles(timeFrame, ticker, amount, null, DateTime.Now.ToUniversalTime());
+            var candles = _client.GetCandles(timeFrame, ticker, 1000, null, DateTime.Now.ToUniversalTime());
             IList<BitfinexCandle> candlesData = candles.Data.ToList();
 
-            for (int i = 1000; i < amount; i+=1000)
+            for (int i = 1000; i < amount; i += 1000)
             {
                 var data = candlesData.ToList();
                 if (data.Count() != 0)
                 {
-                    var morecandles = _client.GetCandles(timeFrame, ticker, amount, null, data.Last().Timestamp.AddMinutes(-5));
+                    var morecandles = _client.GetCandles(timeFrame, ticker, 1000, null, data.Last().Timestamp.AddMinutes(-5));
                     candlesData = data.Concat(morecandles.Data).ToList();
                 }
             }
 
-            return candlesData;
+            return candlesData.OrderBy(d => d.Timestamp).ToList();
         }
 
         public BitfinexPosition GetActivePosition()

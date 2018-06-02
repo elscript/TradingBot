@@ -12,7 +12,7 @@ namespace TestingConsole
 {
     public class MainLogic
     {
-        private BitfinexManager _bitfinexManager;
+        private readonly BitfinexManager _bitfinexManager;
 
         public MainLogic(BitfinexManager bitfinexManager)
         {

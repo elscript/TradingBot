@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Bitfinex.Net.Objects;
 using System.Threading;
@@ -25,6 +26,14 @@ namespace TradingBot.Core
         {
             Thread.Sleep(_delay);
             return _bitfinexManager.GetData(ticker, _timeFrame, _amount);
+        }
+
+        public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
+        {
+            Thread.Sleep(_delay);
+            return GetData(ticker)
+                .Where(d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo)
+                .ToList();
         }
     }
 }

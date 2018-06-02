@@ -18,10 +18,7 @@ namespace TestingConsole
         }
 
         public void Run()
-        {
-            decimal percentOfProfit = 0;
-            var positions = new List<PositionInternal>();
-                        
+        {                      
             var fee = 0.5;
             decimal deposit = 100;
             Console.WriteLine($"Start Deposit : {deposit}$");
@@ -32,15 +29,41 @@ namespace TestingConsole
                     true, 
                     true
                 ),
-                new HistoryPortionDataProvider(
+                new HistoryDataProvider(
                     _bitfinexManager,
                     TimeFrame.ThirtyMinute,
                     100,
-                    20000
+                    15000
                 )
             );
 
-            strategyPlayer.Run("tIOTUSD");;
+            decimal percentOfProfit = 0;
+
+            for (int i = 1; i < 7; i++)
+            {
+                strategyPlayer.SetDateRange(
+                    new DateTime(2018, i, 1, 0, 0, 0), 
+                    new DateTime(2018, i + 1, 1, 0, 0, 0)
+                );
+                
+                strategyPlayer.Run("tIOTUSD");
+
+                var lastPercentOfProfit = percentOfProfit;
+                percentOfProfit += strategyPlayer.ProfitRate * 100;
+                Console.WriteLine(
+                    $"PercentOfProfit for period {strategyPlayer.PlayedPositions.First().OpenTimestamp} - {strategyPlayer.PlayedPositions.Last().CloseTimestamp} : {percentOfProfit - lastPercentOfProfit}%");
+
+                foreach (var position in strategyPlayer.PlayedPositions)
+                {
+                    if (position.Direction == PositionDirection.Long)
+                        deposit += deposit * (position.ClosePrice - position.OpenPrice) / position.OpenPrice;
+                    else if (position.Direction == PositionDirection.Short)
+                        deposit += deposit * (position.OpenPrice - position.ClosePrice) / position.OpenPrice;
+                }
+
+                Console.WriteLine($"Deposit after this period : {deposit}$");
+                Console.WriteLine();
+            }         
         }
     }
 }

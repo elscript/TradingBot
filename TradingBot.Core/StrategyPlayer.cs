@@ -10,22 +10,28 @@ namespace TradingBot.Core
     public abstract class StrategyPlayer
     {
         private PositionInternal _position;
-        private IStrategy _strategy;
-        private IDataProvider _provider;
+        private readonly IStrategy _strategy;
+        protected IDataProvider Provider;
         
         public IList<PositionInternal> PlayedPositions { get; private set; }
         public decimal ProfitRate { get; protected set; }
 
-        public StrategyPlayer(IStrategy strategy, IDataProvider dataProvider)
+        protected StrategyPlayer(IStrategy strategy, IDataProvider dataProvider)
         {
             _strategy = strategy;
-            _provider = dataProvider;
+            Provider = dataProvider;
             PlayedPositions = new List<PositionInternal>();
         }
 
         protected abstract void OnOpenPosition(PositionInternal position);
 
         protected abstract void OnClosePosition(PositionInternal position);
+
+        protected abstract bool ShouldContinue(string ticker);
+
+        protected abstract IList<BitfinexCandle> GetData(string ticker);
+
+        protected abstract void OnStop();
 
         private void Execute(IList<DataSample> samples)
         {
@@ -73,10 +79,12 @@ namespace TradingBot.Core
 
         private void OpenPosition(PositionDirection direction, DataSample sample)
         {
-            _position = new PositionInternal();
-            _position.OpenPrice = sample.Candle.Close;
-            _position.Direction = PositionDirection.Long;
-            _position.OpenTimestamp = sample.Candle.Timestamp;
+            _position = new PositionInternal
+            {
+                OpenPrice = sample.Candle.Close,
+                Direction = direction,
+                OpenTimestamp = sample.Candle.Timestamp
+            };
             this.OnOpenPosition(_position);
         }
 
@@ -101,10 +109,13 @@ namespace TradingBot.Core
             ProfitRate = 0;
             PlayedPositions.Clear();
 
-            while (true)
+            while (ShouldContinue(ticker))
             {
-                Execute(PrepareData(_provider.GetData(ticker)));
+                Execute(PrepareData(GetData(ticker)));
             }
+
+            this.ProfitRate = CalculateProfitRate();
+            this.OnStop();
         }
 
         private IList<DataSample> PrepareData(IList<BitfinexCandle> candles)
@@ -117,7 +128,7 @@ namespace TradingBot.Core
         /// <summary>
         /// Расчет доли прибыли
         /// </summary>
-        private void CalculateProfitRate()
+        private decimal CalculateProfitRate()
         {
             ProfitRate = 0;
             foreach (var position in PlayedPositions)
@@ -127,6 +138,8 @@ namespace TradingBot.Core
                 else if (position.Direction == PositionDirection.Short)
                     ProfitRate += (position.OpenPrice - position.ClosePrice) / position.OpenPrice;
             }
+
+            return ProfitRate;
         }
     }
 }

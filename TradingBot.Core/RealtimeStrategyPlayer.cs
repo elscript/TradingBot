@@ -9,7 +9,7 @@ namespace TradingBot.Core
 {
     public class RealtimeStrategyPlayer : StrategyPlayer
     {
-        private BitfinexManager _bitfinexManager;
+        private readonly BitfinexManager _bitfinexManager;
 
         public RealtimeStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, BitfinexManager bitfinexManager) : base(strategy, dataProvider)
         {
@@ -33,6 +33,21 @@ namespace TradingBot.Core
                 ,
                 position.Amount
             );
+        }
+
+        protected override bool ShouldContinue(string ticker)
+        {
+            return true;
+        }
+
+        protected override IList<BitfinexCandle> GetData(string ticker)
+        {
+            return Provider.GetData(ticker);
+        }
+
+        protected override void OnStop()
+        {
+            
         }
     }
 }
