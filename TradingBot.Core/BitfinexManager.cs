@@ -40,16 +40,22 @@ namespace TradingBot.Core
         /// <returns>Список свечей</returns>
         public IList<BitfinexCandle> GetData(string ticker, TimeFrame timeFrame, int amount)
         {
-            var candles = _client.GetCandles(timeFrame, ticker, 1000, null, DateTime.Now.ToUniversalTime());
+            var portionCount = amount > 1000 ? 1000 : amount;
+
+            var candles = _client.GetCandles(timeFrame, ticker, portionCount, null, DateTime.Now.ToUniversalTime());
             IList<BitfinexCandle> candlesData = candles.Data.ToList();
 
-            for (int i = 1000; i < amount; i += 1000)
+            if (portionCount == 1000)
             {
-                var data = candlesData.ToList();
-                if (data.Count() != 0)
+                for (int i = 1000; i < amount; i += 1000)
                 {
-                    var morecandles = _client.GetCandles(timeFrame, ticker, 1000, null, data.Last().Timestamp.AddMinutes(-5));
-                    candlesData = data.Concat(morecandles.Data).ToList();
+                    var data = candlesData.ToList();
+                    if (data.Count() != 0)
+                    {
+                        var morecandles = _client.GetCandles(timeFrame, ticker, 1000, null,
+                            data.Last().Timestamp.AddMinutes(-5));
+                        candlesData = data.Concat(morecandles.Data).ToList();
+                    }
                 }
             }
 
@@ -63,7 +69,7 @@ namespace TradingBot.Core
 
         public decimal GetCurrentBalance(string currency)
         {
-            return _client.GetWallets().Data.Single(d => d.Currency == currency && d.Type == WalletType.Margin).Balance;
+            return Math.Round(_client.GetWallets().Data.Single(d => d.Currency == currency && d.Type == WalletType.Margin).Balance, 2);
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace TradingBot.Core
         private DateTime _dateTo;
         private IList<BitfinexCandle> _candlesCache;
 
-        public HistoricalStrategyPlayer(IStrategy strategy, IDataProvider dataProvider) : base(strategy, dataProvider)
+        public HistoricalStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, PositionInternal startPosition) : base(strategy, dataProvider, startPosition)
         {
         }
 
@@ -45,6 +45,11 @@ namespace TradingBot.Core
         protected override void OnStop()
         {
             ((HistoryDataProvider)Provider).ClearLastIndex();
+        }
+
+        protected override decimal GetAmount(decimal initialAmount)
+        {
+            return initialAmount;
         }
 
         public void SetDateRange(DateTime dateFrom, DateTime dateTo)

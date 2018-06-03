@@ -16,11 +16,12 @@ namespace TradingBot.Core
         public IList<PositionInternal> PlayedPositions { get; private set; }
         public decimal ProfitRate { get; protected set; }
 
-        protected StrategyPlayer(IStrategy strategy, IDataProvider dataProvider)
+        protected StrategyPlayer(IStrategy strategy, IDataProvider dataProvider, PositionInternal startPosition)
         {
             _strategy = strategy;
             Provider = dataProvider;
             PlayedPositions = new List<PositionInternal>();
+            _position = startPosition;
         }
 
         protected abstract void OnOpenPosition(PositionInternal position);
@@ -33,7 +34,9 @@ namespace TradingBot.Core
 
         protected abstract void OnStop();
 
-        private void Execute(IList<DataSample> samples)
+        protected abstract decimal GetAmount(decimal initialAmount);
+
+        private void Execute(IList<DataSample> samples, string ticker, decimal amount)
         {
             var sample = samples.Last();
 
@@ -41,12 +44,12 @@ namespace TradingBot.Core
             {
                 if (_strategy.BuySignal(samples, sample, null).SignalTriggered)
                 {
-                    OpenPosition(PositionDirection.Long, sample);
+                    OpenPosition(PositionDirection.Long, sample, ticker, amount);
                 }
 
                 if (_strategy.SellSignal(samples, sample, null).SignalTriggered)
                 {
-                    OpenPosition(PositionDirection.Short, sample);
+                    OpenPosition(PositionDirection.Short, sample, ticker, amount);
                 }
             }
             else if (_position.Direction == PositionDirection.Long)
@@ -58,7 +61,7 @@ namespace TradingBot.Core
 
                     if (_strategy.AllowShort)
                     {
-                        OpenPosition(PositionDirection.Short, sample);
+                        OpenPosition(PositionDirection.Short, sample, ticker, amount);
                     }
                 }
             }
@@ -71,19 +74,21 @@ namespace TradingBot.Core
 
                     if (_strategy.AllowLong)
                     {
-                        OpenPosition(PositionDirection.Long, sample);
+                        OpenPosition(PositionDirection.Long, sample, ticker, amount);
                     }
                 }
             }
         }
 
-        private void OpenPosition(PositionDirection direction, DataSample sample)
+        private void OpenPosition(PositionDirection direction, DataSample sample, string ticker, decimal amount)
         {
             _position = new PositionInternal
             {
                 OpenPrice = sample.Candle.Close,
                 Direction = direction,
-                OpenTimestamp = sample.Candle.Timestamp
+                OpenTimestamp = sample.Candle.Timestamp,
+                Ticker = ticker,
+                Amount = amount
             };
             this.OnOpenPosition(_position);
         }
@@ -104,14 +109,14 @@ namespace TradingBot.Core
         /// Запуск стратегии
         /// </summary>
         /// <param name="ticker">Валютная пара</param>
-        public void Run(string ticker)
+        public void Run(string ticker, decimal amount)
         {
             ProfitRate = 0;
             PlayedPositions.Clear();
 
             while (ShouldContinue(ticker))
             {
-                Execute(PrepareData(GetData(ticker)));
+                Execute(PrepareData(GetData(ticker)), ticker, GetAmount(amount));
             }
 
             this.ProfitRate = CalculateProfitRate();
@@ -140,6 +145,12 @@ namespace TradingBot.Core
             }
 
             return ProfitRate;
+        }
+
+        private void SetCurrentPosition()
+        {
+            // TODO чтение текущей позиции из Storage
+            // _position = ...
         }
     }
 }

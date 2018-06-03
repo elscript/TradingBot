@@ -12,14 +12,26 @@ namespace TestingConsole
     {
         static void Main(string[] args)
         {
-            var tester = new StrategyTester(
-                new BitfinexManager(
-                    "",
-                    ""
-                )
-            );              
+            var _accessKey = "";
+            var _accessSecret = "";
+            var bitfinexManager = new BitfinexManager(
+                _accessKey,
+                _accessSecret
+            );
 
-            tester.Run();
+            var tester = new StrategyTester(bitfinexManager);
+            //tester.Run("tIOTUSD");
+
+            var _client = new BitfinexClient(
+                new BitfinexClientOptions()
+                {
+                    ApiCredentials = new ApiCredentials(
+                        key: _accessKey,
+                        secret: _accessSecret)
+                });
+
+            var tradeLogic = new RealTradesLogic(bitfinexManager);
+            tradeLogic.Run("USD", "tIOTUSD");
         }
 
         

@@ -30,10 +30,7 @@ namespace TradingBot.Core
 
         public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
         {
-            Thread.Sleep(_delay);
-            return GetData(ticker)
-                .Where(d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo)
-                .ToList();
+            throw new NotImplementedException();
         }
     }
 }

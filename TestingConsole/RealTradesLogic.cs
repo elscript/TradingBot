@@ -10,21 +10,23 @@ using Timer = System.Threading.Timer;
 
 namespace TestingConsole
 {
-    public class MainLogic
+    public class RealTradesLogic
     {
         private readonly BitfinexManager _bitfinexManager;
 
-        public MainLogic(BitfinexManager bitfinexManager)
+        PositionInternal lastPosition = null;
+
+        public RealTradesLogic(BitfinexManager bitfinexManager)
         {
             _bitfinexManager = bitfinexManager;
         }
 
-        public void Run()
+        public void Run(string currency, string ticker)
         {
             try
             {
-                var position = _bitfinexManager.GetActivePosition();
-                var balance = _bitfinexManager.GetCurrentBalance("usd");
+                //var position = _bitfinexManager.GetActivePosition();
+                var balance = _bitfinexManager.GetCurrentBalance(currency);
                 var fee = 0.5;
 
                 var strategyPlayer = new RealtimeStrategyPlayer(
@@ -39,9 +41,11 @@ namespace TestingConsole
                         100,
                         10000
                     ), 
-                    _bitfinexManager);
+                    _bitfinexManager,
+                    lastPosition,
+                    lastPosition);
 
-                strategyPlayer.Run("tIOTUSD");
+                strategyPlayer.Run(ticker, balance);
                 //var percentOfProfit = strategyPlayer.Run(data) * 100;
                 //var positions = strategyPlayer.PlayedPositions;
 
@@ -56,6 +60,7 @@ namespace TestingConsole
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                Run(currency, ticker);
             }
         }
     }
