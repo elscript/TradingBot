@@ -25,86 +25,61 @@ namespace TradingBot.Core
 
         public IList<BitfinexCandle> GetData(string ticker)
         {
-            IList<BitfinexCandle> result = new List<BitfinexCandle>();
-            if (_cachedCandles == null)
+            return GetDataInternal(ticker, d => true);
+        }
+
+        public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
+        {
+            return GetDataInternal(ticker, d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo);
+        }
+
+        private IList<BitfinexCandle> GetDataInternal(string ticker, Func<BitfinexCandle, bool> predicate)
+        {
+            List<BitfinexCandle> result = new List<BitfinexCandle>();
+            BitfinexCandle targetCandle = null;
+            if (_cachedCandles == null) // данных в кеше нет
             {
-                _cachedCandles = GetAllData(ticker)
+                _cachedCandles = GetAllData(ticker) // читаем все данные без фильтрации в кеш
                     .ToList();
 
-                result = _cachedCandles
-                    .Take(1)
-                    .ToList();
-
-                _lastCandleIndex = _cachedCandles.IndexOf(result.Last());
+                targetCandle = _cachedCandles.FirstOrDefault(predicate); // берем первую свечку, удовлетворяющую условию фильтрации
             }
-            else
+            else if (_cachedCandles.Count >= _lastCandleIndex + 2) // в коллекции есть следующая свеча
             {
-                if (_cachedCandles.Count > _lastCandleIndex + 1)
-                {
-                    if (_lastCandleIndex + 1 < _amountPerPortion)
-                    {
-                        result = _cachedCandles
-                            .Take(_lastCandleIndex + 2)
-                            .ToList();
-                    }
-                    else
-                    {
-                        result = _cachedCandles
-                            .Skip(_lastCandleIndex - _amountPerPortion + 2)
-                            .Take(_amountPerPortion)
-                            .ToList();
-                    }
 
-                    _lastCandleIndex = _cachedCandles.IndexOf(result.Last());
-                }
+                targetCandle = _cachedCandles.Skip(_lastCandleIndex + 1).FirstOrDefault(predicate); // берем ее
             }
+
+            if (targetCandle == null)
+                return result;
+
+            _lastCandleIndex = _cachedCandles.IndexOf(targetCandle); // записываем ее индекс для последующей выборки
+
+            // загрузка предшествующей области для целовой свечи
+            if (_lastCandleIndex < _amountPerPortion - 1) // если индекс целевой свечки меньше порции загрузки
+            {
+                // значит данных, меньше, чем размер порции и требуется загрузить то, что есть
+                result.AddRange(_cachedCandles.Take(_lastCandleIndex));
+                // не забываем добавить в конец саму свечу
+                result.Add(targetCandle);
+            }
+            else // если же данных больше или равно размеру порции
+            {
+                // то грузим кол-во, равное порции - 1, т.к. сама свеча тоже входит в порцию, дабавим ее в конец
+                result.AddRange(
+                    _cachedCandles
+                        .Skip(_lastCandleIndex + 1 - _amountPerPortion)
+                        .Take(_amountPerPortion - 1)
+                    );
+                result.Add(targetCandle);
+            }
+
             return result;
         }
 
         private IList<BitfinexCandle> GetAllData(string ticker)
         {
            return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount);
-        }
-
-        public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
-        {
-            IList<BitfinexCandle> result = new List<BitfinexCandle>();
-            if (_cachedCandles == null)
-            {
-                _cachedCandles = GetAllData(ticker)
-                    .ToList();
-
-                result = _cachedCandles
-                    .Where(d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo)
-                    .Take(1)
-                    .ToList();
-
-                _lastCandleIndex = _cachedCandles.IndexOf(result.Last());
-            }
-            else
-            {
-                if (_cachedCandles.Count > _lastCandleIndex + 1)
-                {
-                    if (_lastCandleIndex + 1 < _amountPerPortion)
-                    {
-                        result = _cachedCandles
-                            .Where(d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo)
-                            .Take(_lastCandleIndex + 2)
-                            .ToList();
-                    }
-                    else // TODO решить проблему с выборкой
-                    {
-                        result = _cachedCandles
-                            .Where(d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo)
-                            .Skip(_lastCandleIndex - _amountPerPortion + 2)
-                            .Take(_amountPerPortion)
-                            .ToList();
-                    }
-
-                    _lastCandleIndex = _cachedCandles.IndexOf(result.Last());
-                }
-            }
-            return result;
         }
 
         public void ClearLastIndex()
