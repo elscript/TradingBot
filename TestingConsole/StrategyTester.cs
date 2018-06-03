@@ -39,6 +39,19 @@ namespace TestingConsole
 
             decimal percentOfProfit = 0;
 
+            for (int i = 1; i < 12; i++)
+            {
+                strategyPlayer.SetDateRange(
+                    new DateTime(2017, i, 1, 0, 0, 0),
+                    new DateTime(2017, i + 1, 1, 0, 0, 0)
+                );
+
+                strategyPlayer.Run("tIOTUSD");
+
+                if (strategyPlayer.PlayedPositions.Count > 0)
+                    WriteResult(ref percentOfProfit, strategyPlayer, ref deposit);
+            }
+
             for (int i = 1; i < 7; i++)
             {
                 strategyPlayer.SetDateRange(
@@ -48,22 +61,29 @@ namespace TestingConsole
                 
                 strategyPlayer.Run("tIOTUSD");
 
-                var lastPercentOfProfit = percentOfProfit;
-                percentOfProfit += strategyPlayer.ProfitRate * 100;
-                Console.WriteLine(
-                    $"PercentOfProfit for period {strategyPlayer.PlayedPositions.First().OpenTimestamp} - {strategyPlayer.PlayedPositions.Last().CloseTimestamp} : {percentOfProfit - lastPercentOfProfit}%");
-
-                foreach (var position in strategyPlayer.PlayedPositions)
-                {
-                    if (position.Direction == PositionDirection.Long)
-                        deposit += deposit * (position.ClosePrice - position.OpenPrice) / position.OpenPrice;
-                    else if (position.Direction == PositionDirection.Short)
-                        deposit += deposit * (position.OpenPrice - position.ClosePrice) / position.OpenPrice;
-                }
-
-                Console.WriteLine($"Deposit after this period : {deposit}$");
-                Console.WriteLine();
+                if (strategyPlayer.PlayedPositions.Count > 0)
+                    WriteResult(ref percentOfProfit, strategyPlayer, ref deposit);
             }         
+        }
+
+        private static void WriteResult(ref decimal percentOfProfit, HistoricalStrategyPlayer strategyPlayer,
+            ref decimal deposit)
+        {
+            var lastPercentOfProfit = percentOfProfit;
+            percentOfProfit += strategyPlayer.ProfitRate * 100;
+            Console.WriteLine(
+                $"PercentOfProfit for period {strategyPlayer.PlayedPositions.First().OpenTimestamp} - {strategyPlayer.PlayedPositions.Last().CloseTimestamp} : {percentOfProfit - lastPercentOfProfit}%");
+
+            foreach (var position in strategyPlayer.PlayedPositions)
+            {
+                if (position.Direction == PositionDirection.Long)
+                    deposit += deposit * (position.ClosePrice - position.OpenPrice) / position.OpenPrice;
+                else if (position.Direction == PositionDirection.Short)
+                    deposit += deposit * (position.OpenPrice - position.ClosePrice) / position.OpenPrice;
+            }
+
+            Console.WriteLine($"Deposit after this period : {deposit}$");
+            Console.WriteLine();
         }
     }
 }
