@@ -81,14 +81,15 @@ namespace TradingBot.Core
         /// <returns>Цена, по которой отработал ордер</returns>
         public decimal ExecuteDealByMarket(string ticker, OrderSide side, decimal amount)
         {
-            var order = _client.PlaceOrder(ticker, side, OrderTypeV1.Market, amount, price:0, hidden: true, useAllAvailable: true);
+            var order = _client.PlaceOrder(ticker.TrimStart('t'), side, OrderTypeV1.Market, amount, price: 1, hidden: true, useAllAvailable: true);
 
             decimal execPrice = 0;
             while (execPrice == 0)
             {
-                var trade = _client.GetTradeHistory(ticker, DateTime.Now.AddSeconds(-20).ToUniversalTime(), DateTime.Now.ToUniversalTime(), 3);
-                execPrice = trade.Data.SingleOrDefault(t => t.OrderId == order.Data.ClientOrderId).ExecutedPrice;
                 Thread.Sleep(5000);
+                var trades = _client.GetTradesForOrder(ticker, order.Data.Id);
+                execPrice = trades.Data.Average(t => t.ExecutedPrice);
+                Thread.Sleep(3000);
             }
             return execPrice;
         }

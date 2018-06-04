@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Bitfinex.Net;
 using Bitfinex.Net.Objects;
 using CryptoExchange.Net.Authentication;
@@ -12,6 +13,8 @@ namespace TestingConsole
     {
         static void Main(string[] args)
         {
+            var ticker = "tIOTUSD";
+            var currency = "USD";
             var _accessKey = "";
             var _accessSecret = "";
             var bitfinexManager = new BitfinexManager(
@@ -19,9 +22,12 @@ namespace TestingConsole
                 _accessSecret
             );
 
+            /*
             var tester = new StrategyTester(bitfinexManager);
-            //tester.Run("tIOTUSD");
+            tester.Run(ticker);
+            */
 
+            /*
             var _client = new BitfinexClient(
                 new BitfinexClientOptions()
                 {
@@ -29,9 +35,10 @@ namespace TestingConsole
                         key: _accessKey,
                         secret: _accessSecret)
                 });
+            */
 
             var tradeLogic = new RealTradesLogic(bitfinexManager);
-            tradeLogic.Run("USD", "tIOTUSD");
+            tradeLogic.Run(currency, ticker);
         }
 
         
