@@ -14,7 +14,7 @@ namespace TestingConsole
     {
         private readonly BitfinexManager _bitfinexManager;
 
-        PositionInternal lastPosition = null;
+        Position lastPosition = null;
 
         public RealTradesLogic(BitfinexManager bitfinexManager)
         {
@@ -42,10 +42,9 @@ namespace TestingConsole
                         10000
                     ), 
                     _bitfinexManager,
-                    lastPosition,
                     lastPosition);
 
-                strategyPlayer.Run(ticker, balance);
+                strategyPlayer.Run(ticker, balance, currency);
                 //var percentOfProfit = strategyPlayer.Run(data) * 100;
                 //var positions = strategyPlayer.PlayedPositions;
 

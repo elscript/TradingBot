@@ -21,7 +21,8 @@ namespace TestingConsole
         {                      
             var fee = 0.5;
             decimal deposit = 100;
-            Console.WriteLine($"Start Deposit : {deposit}$");
+            string currency = "USD";
+            Console.WriteLine($"Start Deposit : {deposit} {currency}");
                         
             var strategyPlayer = new HistoricalStrategyPlayer(
                 new LastForwardThenPreviousStrategy(
@@ -47,13 +48,14 @@ namespace TestingConsole
                     new DateTime(2017, i + 1, 1, 0, 0, 0)
                 );
 
-                strategyPlayer.Run(ticker, deposit);
+                strategyPlayer.Run(ticker, deposit, currency);
 
                 if (strategyPlayer.PlayedPositions.Count > 0)
                 {
                     CalculateCurrentDeposit(strategyPlayer, ref deposit);
+                    var lastPercentOfProfit = percentOfProfit;
                     CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
-                    WriteResult(percentOfProfit, strategyPlayer, deposit);
+                    WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, deposit, currency);
                 }
             }
 
@@ -64,24 +66,24 @@ namespace TestingConsole
                     new DateTime(2018, i + 1, 1, 0, 0, 0)
                 );
                 
-                strategyPlayer.Run("tIOTUSD", deposit);
+                strategyPlayer.Run(ticker, deposit, currency);
 
                 if (strategyPlayer.PlayedPositions.Count > 0)
                 {
                     CalculateCurrentDeposit(strategyPlayer, ref deposit);
+                    var lastPercentOfProfit = percentOfProfit;
                     CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
-                    WriteResult(percentOfProfit, strategyPlayer, deposit);
+                    WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, deposit, currency);
                 }
             }         
         }
 
-        private static void WriteResult(decimal percentOfProfit, StrategyPlayer strategyPlayer, decimal deposit)
+        private static void WriteResult(decimal percentOfProfit, decimal lastPercentOfProfit, StrategyPlayer strategyPlayer, decimal deposit, string currency)
         {
-            var lastPercentOfProfit = percentOfProfit;
             Console.WriteLine(
                 $"PercentOfProfit for period {strategyPlayer.PlayedPositions.First().OpenTimestamp} - {strategyPlayer.PlayedPositions.Last().CloseTimestamp} : {percentOfProfit - lastPercentOfProfit}%");;
 
-            Console.WriteLine($"Deposit after this period : {deposit}$");
+            Console.WriteLine($"Deposit after this period : {Math.Round(deposit, 2)} {currency}");
             Console.WriteLine();
         }
 

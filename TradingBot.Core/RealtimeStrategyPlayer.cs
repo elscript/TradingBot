@@ -10,30 +10,31 @@ namespace TradingBot.Core
     public class RealtimeStrategyPlayer : StrategyPlayer
     {
         private readonly BitfinexManager _bitfinexManager;
-        private PositionInternal _lastNotFinishedPosition;
 
-        public RealtimeStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, BitfinexManager bitfinexManager, PositionInternal startPosition, PositionInternal lastPosition) : base(strategy, dataProvider, startPosition)
+        public RealtimeStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, BitfinexManager bitfinexManager, Position startPosition) : base(strategy, dataProvider, startPosition)
         {
             _bitfinexManager = bitfinexManager;
-            _lastNotFinishedPosition = lastPosition;
         }
 
-        protected override void OnOpenPosition(PositionInternal position)
+        protected override void OnOpenPosition(Position position)
         {
             position.OpenPrice = _bitfinexManager.ExecuteDealByMarket(
                 position.Ticker,
                 position.Direction == PositionDirection.Long ? OrderSide.Buy : OrderSide.Sell,
-                position.Amount    
+                position.Amount
             );
 
-            _lastNotFinishedPosition = position;
+            Console.WriteLine(
+                $"##OnOpenPosition for Ticker {position.Ticker} with OpenPrice is {position.OpenPrice}. Details --- OpenTimestamp: {position.OpenTimestamp}, Direction: {position.Direction}, Amount: {position.Amount}");
 
-            Console.WriteLine($"##OnOpenPosition for Ticker {position.Ticker} with OpenPrice is {position.OpenPrice}. Details --- OpenTimestamp: {position.OpenTimestamp}, Direction: {position.Direction}, Amount: {position.Amount}");
-
-            //TODO запись позиции в БД
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                db.Positions.Add(position);
+                db.SaveChanges();
+            }
         }
 
-        protected override void OnClosePosition(PositionInternal position)
+        protected override void OnClosePosition(Position position)
         {
             position.ClosePrice = _bitfinexManager.ExecuteDealByMarket(
                 position.Ticker,
@@ -42,8 +43,12 @@ namespace TradingBot.Core
             );
 
             Console.WriteLine($"##OnClosePosition for Ticker {position.Ticker} with ClosePrice is {position.ClosePrice}. Details --- OpenTimestamp: {position.OpenTimestamp}, OpenPrice: {position.OpenPrice}, CloseTimestamp: {position.CloseTimestamp}, Direction: {position.Direction}, Amount: {position.Amount}");
-            
-            //TODO запись позиции в БД
+
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                db.Positions.Update(position);
+                db.SaveChanges();
+            }
         }
 
         protected override bool ShouldContinue(string ticker)
@@ -60,12 +65,12 @@ namespace TradingBot.Core
 
         protected override void OnStop()
         {
-            
+            Console.WriteLine($"##OnStop");
         }
 
-        protected override decimal GetAmount(decimal initialAmount)
+        protected override decimal GetAmount(decimal initialAmount, string currency)
         {
-            return _bitfinexManager.GetCurrentBalance("USD");
+            return _bitfinexManager.GetCurrentBalance(currency);
         }
     }
 }

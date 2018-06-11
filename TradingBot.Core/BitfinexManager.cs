@@ -62,9 +62,9 @@ namespace TradingBot.Core
             return candlesData.OrderBy(d => d.Timestamp).ToList();
         }
 
-        public BitfinexPosition GetActivePosition()
+        public BitfinexPosition GetActivePosition(string symbol)
         {
-            return _client.GetActivePositions().Data.First();
+            return _client.GetActivePositions().Data.First(p => p.Symbol == symbol);
         }
 
         public decimal GetCurrentBalance(string currency)

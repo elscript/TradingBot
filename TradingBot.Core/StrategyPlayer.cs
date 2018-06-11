@@ -9,24 +9,24 @@ namespace TradingBot.Core
 {
     public abstract class StrategyPlayer
     {
-        private PositionInternal _position;
+        private Position _position;
         private readonly IStrategy _strategy;
         protected IDataProvider Provider;
         
-        public IList<PositionInternal> PlayedPositions { get; private set; }
+        public IList<Position> PlayedPositions { get; private set; }
         public decimal ProfitRate { get; protected set; }
 
-        protected StrategyPlayer(IStrategy strategy, IDataProvider dataProvider, PositionInternal startPosition)
+        protected StrategyPlayer(IStrategy strategy, IDataProvider dataProvider, Position startPosition)
         {
             _strategy = strategy;
             Provider = dataProvider;
-            PlayedPositions = new List<PositionInternal>();
+            PlayedPositions = new List<Position>();
             _position = startPosition;
         }
 
-        protected abstract void OnOpenPosition(PositionInternal position);
+        protected abstract void OnOpenPosition(Position position);
 
-        protected abstract void OnClosePosition(PositionInternal position);
+        protected abstract void OnClosePosition(Position position);
 
         protected abstract bool ShouldContinue(string ticker);
 
@@ -34,7 +34,7 @@ namespace TradingBot.Core
 
         protected abstract void OnStop();
 
-        protected abstract decimal GetAmount(decimal initialAmount);
+        protected abstract decimal GetAmount(decimal initialAmount, string currency);
 
         private void Execute(IList<DataSample> samples, string ticker, decimal amount)
         {
@@ -82,7 +82,7 @@ namespace TradingBot.Core
 
         private void OpenPosition(PositionDirection direction, DataSample sample, string ticker, decimal amount)
         {
-            _position = new PositionInternal
+            _position = new Position
             {
                 OpenPrice = sample.Candle.Close,
                 Direction = direction,
@@ -109,14 +109,15 @@ namespace TradingBot.Core
         /// Запуск стратегии
         /// </summary>
         /// <param name="ticker">Валютная пара</param>
-        public void Run(string ticker, decimal amount)
+        public void Run(string ticker, decimal initialAmount, string currency)
         {
             ProfitRate = 0;
             PlayedPositions.Clear();
+            SetCurrentPosition();
 
             while (ShouldContinue(ticker))
             {
-                Execute(PrepareData(GetData(ticker)), ticker, GetAmount(amount));
+                Execute(PrepareData(GetData(ticker)), ticker, GetAmount(initialAmount, currency));
             }
 
             this.ProfitRate = CalculateProfitRate();
@@ -149,8 +150,10 @@ namespace TradingBot.Core
 
         private void SetCurrentPosition()
         {
-            // TODO чтение текущей позиции из Storage
-            // _position = ...
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                _position = db.Positions.LastOrDefault(p => p.ClosePrice == 0);
+            }
         }
     }
 }

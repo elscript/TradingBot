@@ -26,6 +26,7 @@ namespace TestingConsole
             var tester = new StrategyTester(bitfinexManager);
             tester.Run(ticker);
             */
+            
 
             /*
             var _client = new BitfinexClient(
@@ -37,8 +38,10 @@ namespace TestingConsole
                 });
             */
 
+            
             var tradeLogic = new RealTradesLogic(bitfinexManager);
             tradeLogic.Run(currency, ticker);
+            
         }
 
         

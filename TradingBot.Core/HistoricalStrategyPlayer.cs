@@ -12,16 +12,16 @@ namespace TradingBot.Core
         private DateTime _dateTo;
         private IList<BitfinexCandle> _candlesCache;
 
-        public HistoricalStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, PositionInternal startPosition) : base(strategy, dataProvider, startPosition)
+        public HistoricalStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, Position startPosition) : base(strategy, dataProvider, startPosition)
         {
         }
 
-        protected override void OnOpenPosition(PositionInternal position)
+        protected override void OnOpenPosition(Position position)
         {
         
         }
 
-        protected override void OnClosePosition(PositionInternal position)
+        protected override void OnClosePosition(Position position)
         {
             
         }
@@ -47,7 +47,7 @@ namespace TradingBot.Core
             ((HistoryDataProvider)Provider).ClearLastIndex();
         }
 
-        protected override decimal GetAmount(decimal initialAmount)
+        protected override decimal GetAmount(decimal initialAmount, string currency)
         {
             return initialAmount;
         }
