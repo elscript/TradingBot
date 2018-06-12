@@ -25,7 +25,7 @@ namespace TradingBot.Core
         public IList<BitfinexCandle> GetData(string ticker)
         {
             Thread.Sleep(_delay);
-            return _bitfinexManager.GetData(ticker, _timeFrame, _amount);
+            return _bitfinexManager.GetData(ticker, _timeFrame, _amount).SkipLast(1).ToList();
         }
 
         public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)

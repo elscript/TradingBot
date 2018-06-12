@@ -6,7 +6,6 @@ using System.Threading;
 using System.Timers;
 using Bitfinex.Net.Objects;
 using TradingBot.Core;
-using Timer = System.Threading.Timer;
 
 namespace TestingConsole
 {
@@ -31,7 +30,7 @@ namespace TestingConsole
 
                 var strategyPlayer = new RealtimeStrategyPlayer(
                     new LastForwardThenPreviousStrategy(
-                        new decimal(fee), 
+                        0, 
                         true, 
                         true
                     ), 
@@ -39,7 +38,7 @@ namespace TestingConsole
                         _bitfinexManager,  
                         TimeFrame.ThirtyMinute, 
                         100,
-                        10000
+                        60000
                     ), 
                     _bitfinexManager,
                     lastPosition);

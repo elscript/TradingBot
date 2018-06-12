@@ -59,7 +59,7 @@ namespace TradingBot.Core
         protected override IList<BitfinexCandle> GetData(string ticker)
         {
             var result = Provider.GetData(ticker);
-            Console.WriteLine($"##GetData Timestamp: {result.Last().Timestamp}, Volume: {result.Last().Volume}, Low: {result.Last().Low}, High: {result.Last().High}, Close: {result.Last().Close}");
+            //Console.WriteLine($"##GetData Timestamp: {result.Last().Timestamp}, Volume: {result.Last().Volume}, Low: {result.Last().Low}, High: {result.Last().High}, Close: {result.Last().Close}");
             return result;
         }
 

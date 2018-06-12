@@ -22,12 +22,11 @@ namespace TestingConsole
                 _accessSecret
             );
 
-            
+            /*
             var tester = new StrategyTester(bitfinexManager);
             tester.Run(ticker);
+            */
             
-            
-
             /*
             var _client = new BitfinexClient(
                 new BitfinexClientOptions()
@@ -38,12 +37,9 @@ namespace TestingConsole
                 });
             */
 
-            /*
             var tradeLogic = new RealTradesLogic(bitfinexManager);
             tradeLogic.Run(currency, ticker);
-            */
-        }
-
-        
+            
+        }      
     }
 }

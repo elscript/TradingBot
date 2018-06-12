@@ -19,7 +19,7 @@ namespace TestingConsole
 
         public void Run(string ticker)
         {                      
-            var fee = 0;
+            var fee = 0.4;
             decimal deposit = 100;
             string currency = "USD";
             Console.WriteLine($"Start Deposit : {deposit} {currency}");
@@ -27,7 +27,7 @@ namespace TestingConsole
 
             var strategyPlayer = new HistoricalStrategyPlayer(
                 new LastForwardThenPreviousStrategy(
-                    new decimal(fee), 
+                    0, 
                     true, 
                     true
                 ),
@@ -44,7 +44,7 @@ namespace TestingConsole
 
             /*
             strategyPlayer.SetDateRange(
-                new DateTime(2018, 6, 1, 0, 0, 0),
+                new DateTime(2017, 1, 1, 0, 0, 0),
                 new DateTime(2018, 6, 14, 0, 0, 0)
             );
 
@@ -52,14 +52,13 @@ namespace TestingConsole
 
             if (strategyPlayer.PlayedPositions.Count > 0)
             {
-                CalculateCurrentDeposit(strategyPlayer, ref deposit);
+                CalculateCurrentDeposit(strategyPlayer, ref deposit, new decimal(fee));
                 var lastPercentOfProfit = percentOfProfit;
                 CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
                 WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, deposit, currency);
             }
             */
 
-            
             for (int i = 1; i < 12; i++)
             {
                 strategyPlayer.SetDateRange(
@@ -71,7 +70,7 @@ namespace TestingConsole
 
                 if (strategyPlayer.PlayedPositions.Count > 0)
                 {
-                    CalculateCurrentDeposit(strategyPlayer, ref deposit);
+                    CalculateCurrentDeposit(strategyPlayer, ref deposit, new decimal(fee));
                     var lastPercentOfProfit = percentOfProfit;
                     CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
                     WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, deposit, currency);
@@ -89,12 +88,13 @@ namespace TestingConsole
 
                 if (strategyPlayer.PlayedPositions.Count > 0)
                 {
-                    CalculateCurrentDeposit(strategyPlayer, ref deposit);
+                    CalculateCurrentDeposit(strategyPlayer, ref deposit, new decimal(fee));
                     var lastPercentOfProfit = percentOfProfit;
                     CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
                     WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, deposit, currency);
                 }               
-            }        
+            }
+            
         }
 
         private static void WriteResult(decimal percentOfProfit, decimal lastPercentOfProfit, StrategyPlayer strategyPlayer, decimal deposit, string currency)
@@ -111,14 +111,14 @@ namespace TestingConsole
             percentOfProfit += strategyPlayer.ProfitRate * 100;
         }
 
-        private static void CalculateCurrentDeposit(StrategyPlayer strategyPlayer, ref decimal deposit)
+        private static void CalculateCurrentDeposit(StrategyPlayer strategyPlayer, ref decimal deposit, decimal feePercentage)
         {
             foreach (var position in strategyPlayer.PlayedPositions)
             {
                 if (position.Direction == PositionDirection.Long)
-                    deposit += deposit * (position.ClosePrice - position.OpenPrice) / position.OpenPrice;
+                    deposit += (deposit * (position.ClosePrice - position.OpenPrice) / position.OpenPrice) - position.OpenPrice * feePercentage;
                 else if (position.Direction == PositionDirection.Short)
-                    deposit += deposit * (position.OpenPrice - position.ClosePrice) / position.OpenPrice;
+                    deposit += deposit * (position.OpenPrice - position.ClosePrice) / position.OpenPrice - position.OpenPrice * feePercentage;
             }
         }
     }

@@ -6,7 +6,7 @@ using System.Text;
 namespace TradingBot.Core
 {
     /// <summary>
-    /// Стратегия, основанная на приниципе "каждый следующий максимум выше предыдущего и каждый следующий минимум выше предыдущего"
+    /// Стратегия, основанная на приниципе "каждый следующий максимум выше предыдущего и каждый следующий минимум ниже предыдущего"
     /// </summary>
     public class LastForwardThenPreviousStrategy : IStrategy
     {
@@ -30,11 +30,11 @@ namespace TradingBot.Core
                 var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMaximums, sample, lastSellPrice.Value, PositionDirection.Short);
                 if (lastExtremumForPrice != null)
                 {
-                    var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.High;
+                    var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.Close;
 
                     if (sample.Candle.Close > stopLossExtremumPrice + stopLossExtremumPrice * (MaxLoosePercentage / 100))
                     {
-                        //Console.WriteLine($"Buy Signal triggered for sample.Candle.Timestamp({sample.Candle.Timestamp}) because sample.Candle.Close({sample.Candle.Close}) > stopLossExtremumPrice({stopLossExtremumPrice}) + stopLossExtremumPrice({stopLossExtremumPrice}) * (MaxLoosePercentage({MaxLoosePercentage}) / 100)");
+                        Console.WriteLine($"##Buy Signal triggered for sample.Candle.Timestamp({sample.Candle.Timestamp}) because sample.Candle.Close({sample.Candle.Close}) > stopLossExtremumPrice({stopLossExtremumPrice}) + stopLossExtremumPrice({stopLossExtremumPrice}) * (MaxLoosePercentage({MaxLoosePercentage}) / 100)");
                         return new SignalResult()
                         {
                             SignalTriggered = true,
@@ -59,6 +59,9 @@ namespace TradingBot.Core
                 lastLocalMaximumPassed = sample.Candle.Close > lastMaximumBeforeSample.CurrentExtremum.Candle.Close;
             }
 
+            if (lastLocalMinimumPassed && lastLocalMaximumPassed)
+                Console.WriteLine($"##Buy Signal triggered for sample.Candle.Timestamp({sample.Candle.Timestamp}) because lastLocalMinimumPassed(minimum.Low is {lastMinimumBeforeSample.CurrentExtremum.Candle.Low} maximum high is {lastMaximumBeforeSample.CurrentExtremum.Candle.High}) and lastLocalMaximumPassed(sample.Candle.Close({sample.Candle.Close}) > lastMaximumBeforeSample.CurrentExtremum.Candle.Close({lastMaximumBeforeSample.CurrentExtremum.Candle.Close}))");
+
             return new SignalResult()
             {
                 ByStopLoss = false,
@@ -79,11 +82,11 @@ namespace TradingBot.Core
                 var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMinimums, sample, lastBuyPrice.Value, PositionDirection.Long);
                 if (lastExtremumForPrice != null)
                 {
-                    var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.Low;
+                    var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.Close;
 
                     if (sample.Candle.Close < stopLossExtremumPrice - stopLossExtremumPrice * (MaxLoosePercentage / 100))
                     {
-                        //Console.WriteLine($"Sell Signal triggered because sample.Candle.Close({sample.Candle.Close}) < stopLossExtremumPrice({stopLossExtremumPrice}) - stopLossExtremumPrice({stopLossExtremumPrice}) * (MaxLoosePercentage({MaxLoosePercentage}) / 100)");
+                        Console.WriteLine($"##Sell Signal triggered because sample.Candle.Close({sample.Candle.Close}) < stopLossExtremumPrice({stopLossExtremumPrice}) - stopLossExtremumPrice({stopLossExtremumPrice}) * (MaxLoosePercentage({MaxLoosePercentage}) / 100)");
                         return new SignalResult()
                         {
                             SignalTriggered = true,
@@ -106,6 +109,9 @@ namespace TradingBot.Core
                 //lastLocalMinimumPassed = sample.Candle.Close < lastMinimumBeforeSample.CurrentExtremum.Candle.Low;
                 lastLocalMinimumPassed = sample.Candle.Close < lastMinimumBeforeSample.CurrentExtremum.Candle.Close;
             }
+
+            if (lastLocalMaximumPassed && lastLocalMinimumPassed)
+                Console.WriteLine($"##Sell Signal triggered for sample.Candle.Timestamp({sample.Candle.Timestamp}) because lastLocalMaximumPassed(minimum.Low is {lastMaximumBeforeSample.CurrentExtremum.Candle.High} maximum high is {lastMinimumBeforeSample.CurrentExtremum.Candle.Low}) and lastLocalMinimumPassed(sample.Candle.Close({sample.Candle.Close}) < lastMinimumBeforeSample.CurrentExtremum.Candle.Close({lastMinimumBeforeSample.CurrentExtremum.Candle.Close}))");
 
             return new SignalResult()
             {

@@ -121,7 +121,8 @@ namespace TradingBot.Core
             {
                 Thread.Sleep(5000);
                 var trades = _client.GetTradesForOrder(ticker, order.Data.Id);
-                execPrice = trades.Data.Average(t => t.ExecutedPrice);
+                if (trades.Data != null && trades.Data.Length > 0)
+                    execPrice = trades.Data.Average(t => t.ExecutedPrice);
                 Thread.Sleep(3000);
             }
             return execPrice;
