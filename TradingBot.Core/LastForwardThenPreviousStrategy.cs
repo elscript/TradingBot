@@ -27,13 +27,15 @@ namespace TradingBot.Core
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
             if (lastSellPrice != null)
             {
-                var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMaximums, sample, lastSellPrice.Value);
+                var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMaximums, sample, lastSellPrice.Value, PositionDirection.Short);
                 if (lastExtremumForPrice != null)
                 {
                     var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.High;
 
                     if (sample.Candle.Close > stopLossExtremumPrice + stopLossExtremumPrice * (MaxLoosePercentage / 100))
-                    {    return new SignalResult()
+                    {
+                        //Console.WriteLine($"Buy Signal triggered for sample.Candle.Timestamp({sample.Candle.Timestamp}) because sample.Candle.Close({sample.Candle.Close}) > stopLossExtremumPrice({stopLossExtremumPrice}) + stopLossExtremumPrice({stopLossExtremumPrice}) * (MaxLoosePercentage({MaxLoosePercentage}) / 100)");
+                        return new SignalResult()
                         {
                             SignalTriggered = true,
                             ByStopLoss = true
@@ -74,13 +76,14 @@ namespace TradingBot.Core
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
             if (lastBuyPrice != null)
             {
-                var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMinimums, sample, lastBuyPrice.Value);
+                var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMinimums, sample, lastBuyPrice.Value, PositionDirection.Long);
                 if (lastExtremumForPrice != null)
                 {
                     var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.Low;
 
                     if (sample.Candle.Close < stopLossExtremumPrice - stopLossExtremumPrice * (MaxLoosePercentage / 100))
                     {
+                        //Console.WriteLine($"Sell Signal triggered because sample.Candle.Close({sample.Candle.Close}) < stopLossExtremumPrice({stopLossExtremumPrice}) - stopLossExtremumPrice({stopLossExtremumPrice}) * (MaxLoosePercentage({MaxLoosePercentage}) / 100)");
                         return new SignalResult()
                         {
                             SignalTriggered = true,
@@ -182,10 +185,10 @@ namespace TradingBot.Core
             return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp);
         }
 
-        private ExtremumArea GetLastExtremumForPriceBeforeSample(IList<ExtremumArea> extremums, DataSample sample, decimal price)
+        private ExtremumArea GetLastExtremumForPriceBeforeSample(IList<ExtremumArea> extremums, DataSample sample, decimal price, PositionDirection direction)
         {
             return extremums.LastOrDefault(m =>
-                m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp && m.CurrentExtremum.Candle.Low < price);
+                m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp && direction == PositionDirection.Long ? m.CurrentExtremum.Candle.High < price : m.CurrentExtremum.Candle.Low < price);
         }
 
         public bool AllowLong { get; }

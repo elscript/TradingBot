@@ -62,6 +62,39 @@ namespace TradingBot.Core
             return candlesData.OrderBy(d => d.Timestamp).ToList();
         }
 
+        /// <summary>
+        /// Получение данных
+        /// </summary>
+        /// <param name="ticker">Валютная пара</param>
+        /// <param name="timeFrame">Таймфрейм</param>
+        /// <param name="amount">Кол-во свечей</param>
+        /// <param name="dateFrom">Начало диапазона</param>
+        /// <param name="dateTo">Конец диапазона</param>
+        /// <returns>Список свечей</returns>
+        public IList<BitfinexCandle> GetData(string ticker, TimeFrame timeFrame, int amount, DateTime dateFrom, DateTime dateTo)
+        {
+            var portionCount = amount > 1000 ? 1000 : amount;
+
+            var candles = _client.GetCandles(timeFrame, ticker, portionCount, dateFrom, dateTo);
+            IList<BitfinexCandle> candlesData = candles.Data.ToList();
+
+            if (portionCount == 1000)
+            {
+                for (int i = 1000; i < amount; i += 1000)
+                {
+                    var data = candlesData.ToList();
+                    if (data.Count() != 0)
+                    {
+                        var morecandles = _client.GetCandles(timeFrame, ticker, 1000, null,
+                            data.Last().Timestamp.AddMinutes(-5));
+                        candlesData = data.Concat(morecandles.Data).ToList();
+                    }
+                }
+            }
+
+            return candlesData.OrderBy(d => d.Timestamp).ToList();
+        }
+
         public BitfinexPosition GetActivePosition(string symbol)
         {
             return _client.GetActivePositions().Data.First(p => p.Symbol == symbol);

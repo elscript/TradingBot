@@ -25,20 +25,22 @@ namespace TradingBot.Core
 
         public IList<BitfinexCandle> GetData(string ticker)
         {
-            return GetDataInternal(ticker, d => true);
+            throw new NotImplementedException();
+            //return GetDataInternal(ticker, d => true);
         }
 
         public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
         {
-            return GetDataInternal(ticker, d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo);
+            return GetDataInternal(ticker, d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo, dateFrom, dateTo);
         }
 
-        private IList<BitfinexCandle> GetDataInternal(string ticker, Func<BitfinexCandle, bool> predicate)
+        private IList<BitfinexCandle> GetDataInternal(string ticker, Func<BitfinexCandle, bool> predicate, DateTime dateFrom, DateTime dateTo)
         {
             List<BitfinexCandle> result = new List<BitfinexCandle>();
             BitfinexCandle targetCandle = null;
             if (_cachedCandles == null) // данных в кеше нет
             {
+                //_cachedCandles = GetAllData(ticker, dateFrom, dateTo)
                 _cachedCandles = GetAllData(ticker) // читаем все данные без фильтрации в кеш
                     .ToList();
 
@@ -80,6 +82,11 @@ namespace TradingBot.Core
         private IList<BitfinexCandle> GetAllData(string ticker)
         {
            return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount);
+        }
+
+        private IList<BitfinexCandle> GetAllData(string ticker, DateTime dateFrom, DateTime dateTo)
+        {
+            return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount, dateFrom, dateTo);
         }
 
         public void ClearLastIndex()
