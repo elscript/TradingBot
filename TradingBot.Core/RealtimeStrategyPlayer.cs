@@ -72,5 +72,13 @@ namespace TradingBot.Core
         {
             return _bitfinexManager.GetCurrentBalance(currency);
         }
+
+        protected override void SetCurrentPosition()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                Position = db.Positions.LastOrDefault(p => p.ClosePrice == 0);
+            }
+        }
     }
 }

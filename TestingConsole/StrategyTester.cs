@@ -23,7 +23,8 @@ namespace TestingConsole
             decimal deposit = 100;
             string currency = "USD";
             Console.WriteLine($"Start Deposit : {deposit} {currency}");
-                        
+            Console.WriteLine($"Ticker : {ticker}");
+
             var strategyPlayer = new HistoricalStrategyPlayer(
                 new LastForwardThenPreviousStrategy(
                     new decimal(fee), 
@@ -34,13 +35,30 @@ namespace TestingConsole
                     _bitfinexManager,
                     TimeFrame.ThirtyMinute,
                     100,
-                    15000
+                    1500
                 ),
                 null
             );
 
             decimal percentOfProfit = 0;
 
+
+            strategyPlayer.SetDateRange(
+                new DateTime(2018, 6, 1, 0, 0, 0),
+                new DateTime(2018, 6, 12, 0, 0, 0)
+            );
+
+            strategyPlayer.Run(ticker, deposit, currency);
+
+            if (strategyPlayer.PlayedPositions.Count > 0)
+            {
+                CalculateCurrentDeposit(strategyPlayer, ref deposit);
+                var lastPercentOfProfit = percentOfProfit;
+                CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
+                WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, deposit, currency);
+            }
+
+            /*
             for (int i = 1; i < 12; i++)
             {
                 strategyPlayer.SetDateRange(
@@ -75,7 +93,8 @@ namespace TestingConsole
                     CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
                     WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, deposit, currency);
                 }
-            }         
+                
+            }   */      
         }
 
         private static void WriteResult(decimal percentOfProfit, decimal lastPercentOfProfit, StrategyPlayer strategyPlayer, decimal deposit, string currency)

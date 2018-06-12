@@ -9,7 +9,7 @@ namespace TradingBot.Core
 {
     public abstract class StrategyPlayer
     {
-        private Position _position;
+        protected Position Position;
         private readonly IStrategy _strategy;
         protected IDataProvider Provider;
         
@@ -21,7 +21,7 @@ namespace TradingBot.Core
             _strategy = strategy;
             Provider = dataProvider;
             PlayedPositions = new List<Position>();
-            _position = startPosition;
+            Position = startPosition;
         }
 
         protected abstract void OnOpenPosition(Position position);
@@ -36,11 +36,13 @@ namespace TradingBot.Core
 
         protected abstract decimal GetAmount(decimal initialAmount, string currency);
 
+        protected abstract void SetCurrentPosition();
+
         private void Execute(IList<DataSample> samples, string ticker, decimal amount)
         {
             var sample = samples.Last();
 
-            if (_position == null)
+            if (Position == null)
             {
                 if (_strategy.BuySignal(samples, sample, null).SignalTriggered)
                 {
@@ -52,9 +54,9 @@ namespace TradingBot.Core
                     OpenPosition(PositionDirection.Short, sample, ticker, amount);
                 }
             }
-            else if (_position.Direction == PositionDirection.Long)
+            else if (Position.Direction == PositionDirection.Long)
             {
-                var signalResult = _strategy.SellSignal(samples, sample, _position.OpenPrice);
+                var signalResult = _strategy.SellSignal(samples, sample, Position.OpenPrice);
                 if (signalResult.SignalTriggered)
                 {
                     ClosePosition(PositionDirection.Long, signalResult.ByStopLoss, sample);
@@ -65,9 +67,9 @@ namespace TradingBot.Core
                     }
                 }
             }
-            else if (_position.Direction == PositionDirection.Short)
+            else if (Position.Direction == PositionDirection.Short)
             {
-                var signalResult = _strategy.BuySignal(samples, sample, _position.OpenPrice);
+                var signalResult = _strategy.BuySignal(samples, sample, Position.OpenPrice);
                 if (signalResult.SignalTriggered)
                 {
                     ClosePosition(PositionDirection.Short, signalResult.ByStopLoss, sample);
@@ -82,7 +84,7 @@ namespace TradingBot.Core
 
         private void OpenPosition(PositionDirection direction, DataSample sample, string ticker, decimal amount)
         {
-            _position = new Position
+            Position = new Position
             {
                 OpenPrice = sample.Candle.Close,
                 Direction = direction,
@@ -90,19 +92,19 @@ namespace TradingBot.Core
                 Ticker = ticker,
                 Amount = amount
             };
-            this.OnOpenPosition(_position);
+            this.OnOpenPosition(Position);
         }
 
         private void ClosePosition(PositionDirection direction, bool byStopLoss, DataSample sample)
         {
             if (direction == PositionDirection.Long)
-                _position.ClosePrice = byStopLoss ? _position.OpenPrice - _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
+                Position.ClosePrice = byStopLoss ? Position.OpenPrice - Position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
             else if (direction == PositionDirection.Short)
-                _position.ClosePrice = byStopLoss ? _position.OpenPrice + _position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
-            _position.CloseTimestamp = sample.Candle.Timestamp;
-            PlayedPositions.Add(_position);
-            this.OnClosePosition(_position);
-            _position = null;
+                Position.ClosePrice = byStopLoss ? Position.OpenPrice + Position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
+            Position.CloseTimestamp = sample.Candle.Timestamp;
+            PlayedPositions.Add(Position);
+            this.OnClosePosition(Position);
+            Position = null;
         }
 
         /// <summary>
@@ -146,14 +148,6 @@ namespace TradingBot.Core
             }
 
             return ProfitRate;
-        }
-
-        private void SetCurrentPosition()
-        {
-            using (ApplicationContext db = new ApplicationContext())
-            {
-                _position = db.Positions.LastOrDefault(p => p.ClosePrice == 0);
-            }
         }
     }
 }

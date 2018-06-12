@@ -52,6 +52,11 @@ namespace TradingBot.Core
             return initialAmount;
         }
 
+        protected override void SetCurrentPosition()
+        {
+
+        }
+
         public void SetDateRange(DateTime dateFrom, DateTime dateTo)
         {
             _dateFrom = dateFrom;
