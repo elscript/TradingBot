@@ -97,10 +97,7 @@ namespace TradingBot.Core
 
         private void ClosePosition(PositionDirection direction, bool byStopLoss, DataSample sample)
         {
-            if (direction == PositionDirection.Long)
-                Position.ClosePrice = byStopLoss ? Position.OpenPrice - Position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
-            else if (direction == PositionDirection.Short)
-                Position.ClosePrice = byStopLoss ? Position.OpenPrice + Position.OpenPrice * _strategy.MaxLoosePercentage / 100 : sample.Candle.Close;
+            Position.ClosePrice = sample.Candle.Close;
             Position.CloseTimestamp = sample.Candle.Timestamp;
             PlayedPositions.Add(Position);
             this.OnClosePosition(Position);
