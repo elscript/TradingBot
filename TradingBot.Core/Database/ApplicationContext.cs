@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Bitfinex.Net.Objects;
 using Microsoft.EntityFrameworkCore;
 
 namespace TradingBot.Core
@@ -8,6 +9,8 @@ namespace TradingBot.Core
     public class ApplicationContext : DbContext
     {
         public DbSet<Position> Positions { get; set; }
+
+        public DbSet<BitfinexCandle> Candles { get; set; }
 
         public ApplicationContext()
         {
