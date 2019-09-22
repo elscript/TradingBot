@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Bitfinex.Net;
 using Bitfinex.Net.Objects;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -56,7 +57,7 @@ namespace TradingBot.Core
             return true;
         }
 
-        protected override IList<BitfinexCandle> GetData(string ticker)
+        protected override IList<Candle> GetData(string ticker)
         {
             var result = Provider.GetData(ticker);
             //Console.WriteLine($"##GetData Timestamp: {result.Last().Timestamp}, Volume: {result.Last().Volume}, Low: {result.Last().Low}, High: {result.Last().High}, Close: {result.Last().Close}");

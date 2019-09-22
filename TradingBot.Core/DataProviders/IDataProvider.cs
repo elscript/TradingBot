@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using Bitfinex.Net.Objects;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
     public interface IDataProvider
     {
-        IList<BitfinexCandle> GetData(string ticker);
+        IList<Candle> GetData(string ticker);
 
-        IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo);
+        IList<Candle> GetData(string ticker, DateTime dateFrom, DateTime dateTo);
     }
 }

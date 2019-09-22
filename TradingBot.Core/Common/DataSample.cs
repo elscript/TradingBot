@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Bitfinex.Net.Objects;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -11,7 +12,7 @@ namespace TradingBot.Core
     /// </summary>
     public class DataSample
     {
-        public DataSample(BitfinexCandle candle)
+        public DataSample(Candle candle)
         {
             Candle = candle;
             Indicators = new Dictionary<string, IIndicator>();    
@@ -30,7 +31,7 @@ namespace TradingBot.Core
         /// <summary>
         /// Данные свечи
         /// </summary>
-        public BitfinexCandle Candle { get; private set; }
+        public Candle Candle { get; private set; }
 
         /// <summary>
         /// Типичная цена

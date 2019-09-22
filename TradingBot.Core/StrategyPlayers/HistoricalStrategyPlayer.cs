@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bitfinex.Net.Objects;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -10,7 +11,7 @@ namespace TradingBot.Core
     {
         private DateTime _dateFrom;
         private DateTime _dateTo;
-        private IList<BitfinexCandle> _candlesCache;
+        private IList<Candle> _candlesCache;
 
         public HistoricalStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, Position startPosition) : base(strategy, dataProvider, startPosition)
         {
@@ -32,12 +33,12 @@ namespace TradingBot.Core
             return _candlesCache.Any();
         }
 
-        private IList<BitfinexCandle> GetDataInternal(string ticker)
+        private IList<Candle> GetDataInternal(string ticker)
         {
             return Provider.GetData(ticker, _dateFrom, _dateTo);
         }
 
-        protected override IList<BitfinexCandle> GetData(string ticker)
+        protected override IList<Candle> GetData(string ticker)
         {
             return _candlesCache;
         }

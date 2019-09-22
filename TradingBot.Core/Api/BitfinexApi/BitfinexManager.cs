@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using Bitfinex.Net;
 using Bitfinex.Net.Objects;
 using CryptoExchange.Net.Authentication;
 using TradingBot.Core;
 using System.Threading;
+using TradingBot.Core.Api;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
-    public class BitfinexManager
+    public class BitfinexManager : IExchangeApi
     {
         private string _accessKey;
         private string _accessSecret;
@@ -38,7 +41,7 @@ namespace TradingBot.Core
         /// <param name="timeFrame">Таймфрейм</param>
         /// <param name="amount">Кол-во свечей</param>
         /// <returns>Список свечей</returns>
-        public IList<BitfinexCandle> GetData(string ticker, TimeFrame timeFrame, int amount)
+        public IList<Candle> GetData(string ticker, TimeFrame timeFrame, int amount)
         {
             var portionCount = amount > 1000 ? 1000 : amount;
 
@@ -59,7 +62,7 @@ namespace TradingBot.Core
                 }
             }
 
-            return candlesData.OrderBy(d => d.Timestamp).ToList();
+            return MapBitfinexCandleToBotCandles(candlesData.OrderBy(d => d.Timestamp), ticker, timeFrame).ToList();
         }
 
         /// <summary>
@@ -68,14 +71,13 @@ namespace TradingBot.Core
         /// <param name="ticker">Валютная пара</param>
         /// <param name="timeFrame">Таймфрейм</param>
         /// <param name="amount">Кол-во свечей</param>
-        /// <param name="dateFrom">Начало диапазона</param>
         /// <param name="dateTo">Конец диапазона</param>
         /// <returns>Список свечей</returns>
-        public IList<BitfinexCandle> GetData(string ticker, TimeFrame timeFrame, int amount, DateTime dateFrom, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, TimeFrame timeFrame, int amount, DateTime dateTo)
         {
             var portionCount = amount > 1000 ? 1000 : amount;
 
-            var candles = _client.GetCandles(timeFrame, ticker, portionCount, dateFrom, dateTo);
+            var candles = _client.GetCandles(timeFrame, ticker, portionCount, null, dateTo);
             IList<BitfinexCandle> candlesData = candles.Data.ToList();
 
             if (portionCount == 1000)
@@ -92,7 +94,7 @@ namespace TradingBot.Core
                 }
             }
 
-            return candlesData.OrderBy(d => d.Timestamp).ToList();
+            return MapBitfinexCandleToBotCandles(candlesData.OrderBy(d => d.Timestamp), ticker, timeFrame).ToList();
         }
 
         public BitfinexPosition GetActivePosition(string symbol)
@@ -126,6 +128,17 @@ namespace TradingBot.Core
                 Thread.Sleep(3000);
             }
             return execPrice;
+        }
+
+        private IEnumerable<Candle> MapBitfinexCandleToBotCandles (IEnumerable<BitfinexCandle> bitfinexCandles, string ticker, TimeFrame timeFrame)
+        {
+            var botCandles = new List<Candle>();
+            foreach (var candle in bitfinexCandles)
+            {
+                botCandles.Add(new Candle(candle, timeFrame, ticker));
+            }
+
+            return botCandles;
         }
     }
 }

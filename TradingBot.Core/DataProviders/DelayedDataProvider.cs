@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Bitfinex.Net.Objects;
 using System.Threading;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -22,13 +23,13 @@ namespace TradingBot.Core
             _delay = delay;
         }
 
-        public IList<BitfinexCandle> GetData(string ticker)
+        public IList<Candle> GetData(string ticker)
         {
             Thread.Sleep(_delay);
             return _bitfinexManager.GetData(ticker, _timeFrame, _amount).SkipLast(1).ToList();
         }
 
-        public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
         {
             throw new NotImplementedException();
         }

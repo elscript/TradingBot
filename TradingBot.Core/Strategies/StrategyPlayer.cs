@@ -4,6 +4,7 @@ using System.Text;
 using Bitfinex.Net.Objects;
 using TradingBot.Core;
 using System.Linq;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -30,7 +31,7 @@ namespace TradingBot.Core
 
         protected abstract bool ShouldContinue(string ticker);
 
-        protected abstract IList<BitfinexCandle> GetData(string ticker);
+        protected abstract IList<Candle> GetData(string ticker);
 
         protected abstract void OnStop();
 
@@ -123,7 +124,7 @@ namespace TradingBot.Core
             this.OnStop();
         }
 
-        private IList<DataSample> PrepareData(IList<BitfinexCandle> candles)
+        private IList<DataSample> PrepareData(IList<Candle> candles)
         {
             return new CandlesDataProcessor(candles).Samples;
             //processor.CalculateEMAs(12, 26);
