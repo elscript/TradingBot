@@ -15,7 +15,7 @@ namespace TradingBot.Core.Api
         /// <param name="timeFrame">Таймфрейм</param>
         /// <param name="amount">Кол-во свечей</param>
         /// <returns>Список свечей</returns>
-        IList<Candle> GetData(string ticker, TimeFrame timeFrame, int amount);
+        IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount);
 
         /// <summary>
         /// Получение данных
@@ -25,6 +25,15 @@ namespace TradingBot.Core.Api
         /// <param name="amount">Кол-во свечей</param>
         /// <param name="dateTo">Конец диапазона</param>
         /// <returns>Список свечей</returns>
-        IList<Candle> GetData(string ticker, TimeFrame timeFrame, int amount, DateTime dateTo);
+        IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateTo);
+
+        /// <summary>
+        /// Покупка по инструменту
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <param name="amount"></param>
+        /// <param name="price"></param>
+        /// <returns>Успешность операции</returns>
+        bool Buy(string symbol, int amount, decimal price);
     }
 }

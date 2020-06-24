@@ -8,7 +8,7 @@ namespace TradingBot.Core.Common
     public class Candle
     {
         public int Id { get; set; }
-        public TimeFrame TimeFrame { get; set; }
+        public Timeframe TimeFrame { get; set; }
         public string Ticker { get; set; }
         public decimal Volume { get; set; }
         public decimal Low { get; set; }
@@ -20,18 +20,6 @@ namespace TradingBot.Core.Common
         public Candle()
         {
             
-        }
-
-        public Candle(BitfinexCandle bitfinexCandle, TimeFrame timeFrame, string ticker)
-        {
-            this.Timestamp = bitfinexCandle.Timestamp;
-            this.Close = bitfinexCandle.Close;
-            this.High = bitfinexCandle.High;
-            this.Open = bitfinexCandle.Open;
-            this.Low = bitfinexCandle.Low;
-            this.Volume = bitfinexCandle.Volume;
-            this.TimeFrame = timeFrame;
-            this.Ticker = ticker;
         }
     }
 }

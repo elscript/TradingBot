@@ -11,11 +11,11 @@ namespace TradingBot.Core
     public class DelayedDataProvider : IDataProvider
     {
         private BitfinexManager _bitfinexManager;
-        private TimeFrame _timeFrame;
+        private Timeframe _timeFrame;
         private int _amount;
         private int _delay;
 
-        public DelayedDataProvider(BitfinexManager bitfinexManager, TimeFrame timeFrame, int amount, int delay)
+        public DelayedDataProvider(BitfinexManager bitfinexManager, Timeframe timeFrame, int amount, int delay)
         {
             _bitfinexManager = bitfinexManager;
             _timeFrame = timeFrame;

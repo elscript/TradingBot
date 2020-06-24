@@ -10,13 +10,13 @@ namespace TradingBot.Core
     public class HistoryDataProvider : IDataProvider
     {
         private BitfinexManager _bitfinexManager;
-        private TimeFrame _timeFrame;
+        private Timeframe _timeFrame;
         private int _amountPerPortion;
         private int _totalAmount;
         private IList<Candle> _cachedCandles;
         private int _lastCandleIndex = -1;
 
-        public HistoryDataProvider(BitfinexManager bitfinexManager, TimeFrame timeFrame, int amountPerPortion, int totalAmount)
+        public HistoryDataProvider(BitfinexManager bitfinexManager, Timeframe timeFrame, int amountPerPortion, int totalAmount)
         {
             _bitfinexManager = bitfinexManager;
             _timeFrame = timeFrame;

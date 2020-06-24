@@ -19,10 +19,11 @@ namespace TradingBot.Core.DataCrawling
         private CancellationToken _cancelletionToken;
         CancellationTokenSource _cancelTokenSource;
 
-        public void Run(TimeSpan period, int amountOfCandles)
+        public void Run(TimeSpan period, int amountOfCandles, string ticker)
         {
             _cancelTokenSource = new CancellationTokenSource();
             _cancelletionToken = _cancelTokenSource.Token;
+            _ticker = ticker;
             _currentTask = Task.Factory.StartNew(() => CrawlData(period, amountOfCandles, _apiManager, _ticker, _cancelletionToken), _cancelletionToken);
         }
 
@@ -35,56 +36,50 @@ namespace TradingBot.Core.DataCrawling
         {
             while (!cancelletionToken.IsCancellationRequested)
             {
-                CrawlForTimeFrame(TimeFrame.FiveMinute, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.FiveMinute, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(100);
 
-                CrawlForTimeFrame(TimeFrame.FiveMinute, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.FiveMinute, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(100);
 
-                CrawlForTimeFrame(TimeFrame.FiveMinute, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.FiveMinute, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(100);
 
-                CrawlForTimeFrame(TimeFrame.FiveMinute, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.FiveMinute, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.OneMinute, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.OneMinute, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.OneMonth, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.OneMonth, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.FourteenDay, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.SevenDay, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.SevenDay, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.OneDay, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.OneDay, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.TwelveHour, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.TwelveHour, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.SixHour, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.SixHour, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.OneHour, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.ThreeHour, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.ThirtyMinute, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
-                CrawlForTimeFrame(TimeFrame.OneHour, ticker, amountOfCandles, apiManager);
-                Thread.Sleep(period);
-
-                CrawlForTimeFrame(TimeFrame.ThirtyMinute, ticker, amountOfCandles, apiManager);
-                Thread.Sleep(period);
-
-                CrawlForTimeFrame(TimeFrame.FiveteenMinute, ticker, amountOfCandles, apiManager);
+                CrawlForTimeFrame(Timeframe.FiveteenMinute, ticker, amountOfCandles, apiManager);
                 Thread.Sleep(period);
 
 
             }
         }
 
-        private static void CrawlForTimeFrame(TimeFrame timeFrame, string ticker, int amountOfCandles, IExchangeApi apiManager)
+        private static void CrawlForTimeFrame(Timeframe timeFrame, string ticker, int amountOfCandles, IExchangeApi apiManager)
         {
             DateTime? lastTimestamp;
             using (var dbContext = new ApplicationContext())
@@ -99,7 +94,7 @@ namespace TradingBot.Core.DataCrawling
             }
         }
 
-        private static void CrawlNewCandles(TimeFrame timeFrame, string ticker, int amountOfCandles, IExchangeApi apiManager, ApplicationContext dbContext)
+        private static void CrawlNewCandles(Timeframe timeFrame, string ticker, int amountOfCandles, IExchangeApi apiManager, ApplicationContext dbContext)
         {
             // Get new candles
             var firstTimeStamp = GetFirstTimestamp(dbContext.Candles, timeFrame, ticker);
@@ -113,7 +108,7 @@ namespace TradingBot.Core.DataCrawling
             }
         }
 
-        public static DateTime? GetLastTimestamp(DbSet<Candle> dbSet, TimeFrame timeFrame, string ticker)
+        public static DateTime? GetLastTimestamp(DbSet<Candle> dbSet, Timeframe timeFrame, string ticker)
         {
             return dbSet
                 .Where(c => c.Ticker == ticker)
@@ -123,7 +118,7 @@ namespace TradingBot.Core.DataCrawling
                 .LastOrDefault();
         }
 
-        public static DateTime? GetFirstTimestamp(DbSet<Candle> dbSet, TimeFrame timeFrame, string ticker)
+        public static DateTime? GetFirstTimestamp(DbSet<Candle> dbSet, Timeframe timeFrame, string ticker)
         {
             return dbSet
                 .Where(c => c.Ticker == ticker)

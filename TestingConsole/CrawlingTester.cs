@@ -4,23 +4,22 @@ using System.Text;
 using Bitfinex.Net.Objects;
 using TradingBot.Core;
 using TradingBot.Core.DataCrawling;
+using TradingBot.Core.Api;
 
 namespace TestingConsole
 {
     public class CrawlingTester
     {
-        private BitfinexManager _bitfinexManager;
-        private BitfinexDataCrawler _dataCrawler;
+        private IDataCrawler _dataCrawler;
 
-        public CrawlingTester(BitfinexManager bitfinexManager)
+        public CrawlingTester(IDataCrawler crawler)
         {
-            _bitfinexManager = bitfinexManager;
+            _dataCrawler = crawler;
         }
 
         public void Run(string ticker)
         {
-            _dataCrawler = new BitfinexDataCrawler(_bitfinexManager, ticker);
-            _dataCrawler.Run(TimeSpan.FromSeconds(60), 100);
+            _dataCrawler.Run(TimeSpan.FromSeconds(60), 100, ticker);
         }
     }
 }

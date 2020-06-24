@@ -5,6 +5,7 @@ using System.Text;
 using Bitfinex.Net;
 using Bitfinex.Net.Objects;
 using TradingBot.Core;
+using TradingBot.Core.Common;
 
 namespace TestingConsole
 {
@@ -17,7 +18,7 @@ namespace TestingConsole
             _bitfinexManager = bitfinexManager;
         }
 
-        public void Run(string ticker, TimeFrame timeframe, decimal startDeposit, double fee, DateTime dateFrom, DateTime dateTo)
+        public void Run(string ticker, Timeframe timeframe, decimal startDeposit, double fee, DateTime dateFrom, DateTime dateTo)
         {                      
             decimal deposit = startDeposit;
             string currency = "USD";

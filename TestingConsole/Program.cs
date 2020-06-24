@@ -6,6 +6,7 @@ using Bitfinex.Net;
 using Bitfinex.Net.Objects;
 using CryptoExchange.Net.Authentication;
 using TradingBot.Core;
+using TradingBot.Core.DataCrawling;
 
 namespace TestingConsole
 {
@@ -49,7 +50,7 @@ namespace TestingConsole
             tradeLogic.Run(currency, ticker);
             */
 
-            var crawlingTester = new CrawlingTester(bitfinexManager);
+            var crawlingTester = new CrawlingTester(new BitfinexDataCrawler(bitfinexManager));
             crawlingTester.Run(ticker);
 
             while (true)

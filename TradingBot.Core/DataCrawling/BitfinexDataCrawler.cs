@@ -13,10 +13,9 @@ namespace TradingBot.Core.DataCrawling
 {
     public class BitfinexDataCrawler : AbstractDataCrawler
     {
-        public BitfinexDataCrawler(BitfinexManager apiManager, string ticker)
+        public BitfinexDataCrawler(IExchangeApi apiManager)
         {
             _apiManager = apiManager;
-            _ticker = ticker;
         }
     }
 }
