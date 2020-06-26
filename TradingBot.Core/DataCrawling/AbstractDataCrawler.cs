@@ -99,7 +99,7 @@ namespace TradingBot.Core.DataCrawling
             // Get new candles
             var firstTimeStamp = GetFirstTimestamp(dbContext.Candles, timeFrame, ticker);
             DateTime endDate = firstTimeStamp.Value != DateTime.MinValue ? firstTimeStamp.Value : DateTime.Now.ToUniversalTime();
-            var newCandles = apiManager.GetData(ticker, timeFrame, amountOfCandles, endDate).Take(amountOfCandles - 1);
+            var newCandles = apiManager.GetData(ticker, timeFrame, amountOfCandles, endDate.AddDays(-100000), endDate).Take(amountOfCandles - 1); // TODO убрать хардкод
 
             // Save new data to store
             foreach (var candle in newCandles)

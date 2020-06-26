@@ -6,6 +6,7 @@ using System.Threading;
 using System.Timers;
 using Bitfinex.Net.Objects;
 using TradingBot.Core;
+using TradingBot.Core.Common;
 
 namespace TestingConsole
 {
@@ -36,7 +37,7 @@ namespace TestingConsole
                     ), 
                     new DelayedDataProvider(
                         _bitfinexManager,  
-                        TimeFrame.ThirtyMinute, 
+                        Timeframe.ThirtyMinute, 
                         100,
                         60000
                     ), 

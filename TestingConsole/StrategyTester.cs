@@ -6,16 +6,14 @@ using Bitfinex.Net;
 using Bitfinex.Net.Objects;
 using TradingBot.Core;
 using TradingBot.Core.Common;
+using TradingBot.Core.DataProviders;
 
 namespace TestingConsole
 {
     public class StrategyTester
     {
-        private BitfinexManager _bitfinexManager;
-
-        public StrategyTester(BitfinexManager bitfinexManager)
+        public StrategyTester()
         {
-            _bitfinexManager = bitfinexManager;
         }
 
         public void Run(string ticker, Timeframe timeframe, decimal startDeposit, double fee, DateTime dateFrom, DateTime dateTo)
@@ -31,11 +29,8 @@ namespace TestingConsole
                     true, 
                     true
                 ),
-                new HistoryDataProvider(
-                    _bitfinexManager,
-                    timeframe,
-                    100,
-                    15000
+                new DbDataProvider(
+                    timeframe
                 ),
                 null
             );

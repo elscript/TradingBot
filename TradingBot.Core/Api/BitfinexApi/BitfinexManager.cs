@@ -65,48 +65,6 @@ namespace TradingBot.Core
             return MapBitfinexCandleToBotCandles(candlesData.OrderBy(d => d.Timestamp), ticker, timeFrame).ToList();
         }
 
-        private TimeFrame MapTimeframe(Timeframe timeFrame)
-        {
-            var result = new TimeFrame();
-            switch (timeFrame)
-            {
-                case Timeframe.OneMinute:
-                    result = TimeFrame.OneMinute;
-                    break;
-                case Timeframe.FiveMinute:
-                    result = TimeFrame.FiveMinute;
-                    break;
-                case Timeframe.FiveteenMinute:
-                    result = TimeFrame.FiveteenMinute;
-                    break;
-                case Timeframe.ThirtyMinute:
-                    result = TimeFrame.ThirtyMinute;
-                    break;
-                case Timeframe.OneHour:
-                    result = TimeFrame.OneHour;
-                    break;
-                case Timeframe.SixHour:
-                    result = TimeFrame.SixHour;
-                    break;
-                case Timeframe.TwelveHour:
-                    result = TimeFrame.TwelveHour;
-                    break;
-                case Timeframe.OneDay:
-                    result = TimeFrame.OneDay;
-                    break;
-                case Timeframe.SevenDay:
-                    result = TimeFrame.SevenDay;
-                    break;
-                case Timeframe.OneMonth:
-                    result = TimeFrame.OneMonth;
-                    break;
-                default:
-                    break;
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// Получение данных
         /// </summary>
@@ -115,7 +73,7 @@ namespace TradingBot.Core
         /// <param name="amount">Кол-во свечей</param>
         /// <param name="dateTo">Конец диапазона</param>
         /// <returns>Список свечей</returns>
-        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateFrom, DateTime dateTo)
         {
             var portionCount = amount > 1000 ? 1000 : amount;
 
@@ -192,6 +150,48 @@ namespace TradingBot.Core
             }
 
             return botCandles;
+        }
+
+        private TimeFrame MapTimeframe(Timeframe timeFrame)
+        {
+            var result = new TimeFrame();
+            switch (timeFrame)
+            {
+                case Timeframe.OneMinute:
+                    result = TimeFrame.OneMinute;
+                    break;
+                case Timeframe.FiveMinute:
+                    result = TimeFrame.FiveMinute;
+                    break;
+                case Timeframe.FiveteenMinute:
+                    result = TimeFrame.FiveteenMinute;
+                    break;
+                case Timeframe.ThirtyMinute:
+                    result = TimeFrame.ThirtyMinute;
+                    break;
+                case Timeframe.OneHour:
+                    result = TimeFrame.OneHour;
+                    break;
+                case Timeframe.SixHour:
+                    result = TimeFrame.SixHour;
+                    break;
+                case Timeframe.TwelveHour:
+                    result = TimeFrame.TwelveHour;
+                    break;
+                case Timeframe.OneDay:
+                    result = TimeFrame.OneDay;
+                    break;
+                case Timeframe.SevenDay:
+                    result = TimeFrame.SevenDay;
+                    break;
+                case Timeframe.OneMonth:
+                    result = TimeFrame.OneMonth;
+                    break;
+                default:
+                    break;
+            }
+
+            return result;
         }
 
         public bool Buy(string symbol, int amount, decimal price)

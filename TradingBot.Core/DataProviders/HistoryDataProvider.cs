@@ -32,10 +32,10 @@ namespace TradingBot.Core
 
         public IList<Candle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
         {
-            return GetDataInternal(ticker, d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo, dateFrom, dateTo);
+            return GetDataInternal(ticker, d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo);
         }
 
-        private IList<Candle> GetDataInternal(string ticker, Func<Candle, bool> predicate, DateTime dateFrom, DateTime dateTo)
+        private IList<Candle> GetDataInternal(string ticker, Func<Candle, bool> predicate)
         {
             List<Candle> result = new List<Candle>();
             Candle targetCandle = null;
@@ -85,9 +85,9 @@ namespace TradingBot.Core
            return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount);
         }
 
-        private IList<Candle> GetAllData(string ticker, DateTime dateTo)
+        private IList<Candle> GetAllData(string ticker, DateTime dateFrom, DateTime dateTo)
         {
-            return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount, dateTo);
+            return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount, dateFrom, dateTo);
         }
 
         public void ClearLastIndex()

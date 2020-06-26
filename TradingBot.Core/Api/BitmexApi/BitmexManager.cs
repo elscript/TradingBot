@@ -36,7 +36,7 @@ namespace TradingBot.Core.BitmexApi
             throw new NotImplementedException();
         }
 
-        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateFrom, DateTime dateTo)
         {
             throw new NotImplementedException();
         }

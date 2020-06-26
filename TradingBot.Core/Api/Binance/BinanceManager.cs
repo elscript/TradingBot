@@ -43,7 +43,7 @@ namespace TradingBot.Core.Api.Binance
             WebCallResult<IEnumerable<BinanceKline>> klines;
             using (var client = new BinanceClient())
             {
-                klines = client.GetKlines(ticker, MapTimeFrame(timeFrame), startTime: DateTime.UtcNow.AddHours(-24), endTime: DateTime.UtcNow, limit: 1000);
+                klines = client.GetKlines(ticker, MapTimeFrame(timeFrame), startTime: DateTime.UtcNow.AddHours(-24), endTime: DateTime.UtcNow, limit: amount);
             }
             if (klines.Success)
                 return ExtractCandles(klines, ticker, timeFrame);
@@ -51,17 +51,35 @@ namespace TradingBot.Core.Api.Binance
                 return new List<Candle>();
         }
 
-        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateFrom, DateTime dateTo)
         {
             WebCallResult<IEnumerable<BinanceKline>> klines;
             using (var client = new BinanceClient())
             {
-                klines = client.GetKlines(ticker, MapTimeFrame(timeFrame), startTime: DateTime.UtcNow.AddHours(-24), endTime: dateTo, limit: 1000);
+                klines = client.GetKlines(ticker, MapTimeFrame(timeFrame), startTime: dateFrom, endTime: dateTo, limit: amount);
             }
             if (klines.Success)
                 return ExtractCandles(klines, ticker, timeFrame);
             else
                 return new List<Candle>();
+        }
+
+        public IList<string> GetTradingPairs()
+        {
+            var pairs = new List<string>();
+            WebCallResult<BinanceExchangeInfo> result = null;
+            using (var client = new BinanceClient())
+            {
+                result = client.GetExchangeInfo();
+            }
+            if (result.Success)
+            {
+                foreach (var item in result.Data.Symbols)
+                {
+                    pairs.Add(item.Name);
+                }
+            }
+            return pairs;
         }
 
         private KlineInterval MapTimeFrame(Timeframe timeFrame)

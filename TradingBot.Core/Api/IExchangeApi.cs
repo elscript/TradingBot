@@ -23,9 +23,10 @@ namespace TradingBot.Core.Api
         /// <param name="ticker">Валютная пара</param>
         /// <param name="timeFrame">Таймфрейм</param>
         /// <param name="amount">Кол-во свечей</param>
+        /// <param name="dateTo">Начало диапазона</param>
         /// <param name="dateTo">Конец диапазона</param>
         /// <returns>Список свечей</returns>
-        IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateTo);
+        IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateFrom, DateTime dateTo);
 
         /// <summary>
         /// Покупка по инструменту
