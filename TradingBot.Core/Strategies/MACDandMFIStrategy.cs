@@ -79,6 +79,11 @@ namespace TradingBot.Core
             };
         }
 
+        public decimal GetStopLossPrice(IList<DataSample> samples, DataSample sample, Position position)
+        {
+            throw new NotImplementedException();
+        }
+
         public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice)
         {
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь

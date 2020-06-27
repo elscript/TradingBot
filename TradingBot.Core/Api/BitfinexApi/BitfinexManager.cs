@@ -56,7 +56,7 @@ namespace TradingBot.Core
                     if (data.Count() != 0)
                     {
                         var morecandles = _client.GetCandles(MapTimeframe(timeFrame), ticker, 1000, null,
-                            data.Last().Timestamp.AddMinutes(-5));
+                            data.Last().Timestamp.AddMinutes(-5)); //TODO убрать хардкод
                         candlesData = data.Concat(morecandles.Data).ToList();
                     }
                 }

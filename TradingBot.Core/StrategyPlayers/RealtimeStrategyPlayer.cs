@@ -12,7 +12,7 @@ namespace TradingBot.Core
     {
         private readonly BitfinexManager _bitfinexManager;
 
-        public RealtimeStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, BitfinexManager bitfinexManager, Position startPosition) : base(strategy, dataProvider, startPosition)
+        public RealtimeStrategyPlayer(IStrategy strategy, IDataProducer dataProvider, BitfinexManager bitfinexManager, Position startPosition) : base(strategy, dataProvider, startPosition)
         {
             _bitfinexManager = bitfinexManager;
         }
@@ -52,14 +52,14 @@ namespace TradingBot.Core
             }
         }
 
-        protected override bool ShouldContinue(string ticker)
+        protected override bool ShouldContinue(string ticker, Timeframe timeframe)
         {
             return true;
         }
 
-        protected override IList<Candle> GetData(string ticker)
+        protected override IList<Candle> GetData(string ticker, Timeframe timeFrame)
         {
-            var result = Provider.GetData(ticker);
+            var result = Producer.GetData(ticker, timeFrame);
             //Console.WriteLine($"##GetData Timestamp: {result.Last().Timestamp}, Volume: {result.Last().Volume}, Low: {result.Last().Low}, High: {result.Last().High}, Close: {result.Last().Close}");
             return result;
         }
@@ -80,6 +80,11 @@ namespace TradingBot.Core
             {
                 Position = db.Positions.LastOrDefault(p => p.ClosePrice == 0);
             }
+        }
+
+        protected override void OnSetStopLoss(decimal price)
+        {
+            throw new NotImplementedException();
         }
     }
 }

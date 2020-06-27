@@ -29,9 +29,9 @@ namespace TestingConsole
                     true, 
                     true
                 ),
-                new DbDataProvider(
-                    timeframe
-                ),
+                new HistoryDataProducer(
+                    new StorageDataProvider(),
+                    50),
                 null
             );
 
@@ -41,7 +41,7 @@ namespace TestingConsole
             {
                 strategyPlayer.SetDateRange(current, current.AddMonths(1));
                 
-                strategyPlayer.Run(ticker, deposit, currency);
+                strategyPlayer.Run(ticker, timeframe, deposit, currency);
 
                 if (strategyPlayer.PlayedPositions.Count > 0)
                 {

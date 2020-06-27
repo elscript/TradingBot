@@ -21,7 +21,7 @@ namespace TestingConsole
             _bitfinexManager = bitfinexManager;
         }
 
-        public void Run(string currency, string ticker)
+        public void Run(string currency, string ticker, Timeframe timeframe)
         {
             try
             {
@@ -35,16 +35,15 @@ namespace TestingConsole
                         true, 
                         true
                     ), 
-                    new DelayedDataProvider(
+                    new DelayedDataProducer(
                         _bitfinexManager,  
-                        Timeframe.ThirtyMinute, 
                         100,
                         60000
                     ), 
                     _bitfinexManager,
                     lastPosition);
 
-                strategyPlayer.Run(ticker, balance, currency);
+                strategyPlayer.Run(ticker, timeframe, balance, currency);
                 //var percentOfProfit = strategyPlayer.Run(data) * 100;
                 //var positions = strategyPlayer.PlayedPositions;
 
@@ -59,7 +58,7 @@ namespace TestingConsole
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Run(currency, ticker);
+                Run(currency, ticker, timeframe);
             }
         }
     }

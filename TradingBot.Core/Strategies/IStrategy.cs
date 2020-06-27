@@ -10,6 +10,21 @@ namespace TradingBot.Core
     public interface IStrategy
     {
         /// <summary>
+        /// Стратегия позволяет совершать Long-сделки
+        /// </summary>
+        bool AllowLong { get; }
+
+        /// <summary>
+        /// Стратегия позволяет совершать Short-сделки
+        /// </summary>
+        bool AllowShort { get; }
+
+        /// <summary>
+        /// Максимально допустимый процент потерь с позиции
+        /// </summary>
+        decimal MaxLoosePercentage { get; }
+
+        /// <summary>
         /// Сигнал на покупку
         /// </summary>
         /// <param name="samples">Сэмплы данных</param>
@@ -28,18 +43,12 @@ namespace TradingBot.Core
         SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice);
 
         /// <summary>
-        /// Стратегия позволяет совершать Long-сделки
+        /// Получить цену для установки стопа
         /// </summary>
-        bool AllowLong { get; }
-
-        /// <summary>
-        /// Стратегия позволяет совершать Short-сделки
-        /// </summary>
-        bool AllowShort { get; }
-
-        /// <summary>
-        /// Максимально допустимый процент потерь с позиции
-        /// </summary>
-        decimal MaxLoosePercentage { get; }
+        /// <param name="samples">Сэмплы данных</param>
+        /// <param name="sample">Текущий сэмпл</param>
+        /// <param name="position">Текущая позиция</param>
+        /// <returns></returns>
+        decimal GetStopLossPrice(IList<DataSample> samples, DataSample sample, Position position);
     }
 }

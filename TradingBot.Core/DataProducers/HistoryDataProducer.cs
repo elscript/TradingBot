@@ -4,45 +4,42 @@ using System.Text;
 using Bitfinex.Net.Objects;
 using System.Linq;
 using TradingBot.Core.Common;
+using TradingBot.Core.DataProviders;
 
 namespace TradingBot.Core
 {
-    public class HistoryDataProvider : IDataProvider
+    public class HistoryDataProducer : IDataProducer
     {
-        private BitfinexManager _bitfinexManager;
-        private Timeframe _timeFrame;
+        private IDataProvider _provider;
         private int _amountPerPortion;
-        private int _totalAmount;
         private IList<Candle> _cachedCandles;
         private int _lastCandleIndex = -1;
 
-        public HistoryDataProvider(BitfinexManager bitfinexManager, Timeframe timeFrame, int amountPerPortion, int totalAmount)
+        public HistoryDataProducer(IDataProvider provider, int amountPerPortion)
         {
-            _bitfinexManager = bitfinexManager;
-            _timeFrame = timeFrame;
+            _provider = provider;
             _amountPerPortion = amountPerPortion;
-            _totalAmount = totalAmount;
         }
 
-        public IList<Candle> GetData(string ticker)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame)
         {
             throw new NotImplementedException();
             //return GetDataInternal(ticker, d => true);
         }
 
-        public IList<Candle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame, DateTime dateFrom, DateTime dateTo)
         {
-            return GetDataInternal(ticker, d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo);
+            return GetDataInternal(ticker, timeFrame, d => d.Timestamp >= dateFrom && d.Timestamp <= dateTo);
         }
 
-        private IList<Candle> GetDataInternal(string ticker, Func<Candle, bool> predicate)
+        private IList<Candle> GetDataInternal(string ticker, Timeframe timeFrame, Func<Candle, bool> predicate)
         {
             List<Candle> result = new List<Candle>();
             Candle targetCandle = null;
             if (_cachedCandles == null) // данных в кеше нет
             {
                 //_cachedCandles = GetAllData(ticker, dateFrom, dateTo)
-                _cachedCandles = GetAllData(ticker) // читаем все данные без фильтрации в кеш
+                _cachedCandles = GetAllData(ticker, timeFrame) // читаем все данные без фильтрации в кеш
                     .ToList();
 
                 targetCandle = _cachedCandles.FirstOrDefault(predicate); // берем первую свечку, удовлетворяющую условию фильтрации
@@ -80,14 +77,14 @@ namespace TradingBot.Core
             return result;
         }
 
-        private IList<Candle> GetAllData(string ticker)
+        private IList<Candle> GetAllData(string ticker, Timeframe timeFrame)
         {
-           return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount);
+           return _provider.GetAllData(ticker, timeFrame);
         }
 
-        private IList<Candle> GetAllData(string ticker, DateTime dateFrom, DateTime dateTo)
+        private IList<Candle> GetAllData(string ticker, Timeframe timeFrame, DateTime dateFrom, DateTime dateTo)
         {
-            return _bitfinexManager.GetData(ticker, _timeFrame, _totalAmount, dateFrom, dateTo);
+            return _provider.GetDataForPeriod(ticker, timeFrame, dateFrom, dateTo);
         }
 
         public void ClearLastIndex()

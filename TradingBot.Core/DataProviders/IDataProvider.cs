@@ -1,15 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Bitfinex.Net.Objects;
 using TradingBot.Core.Common;
 
-namespace TradingBot.Core
+namespace TradingBot.Core.DataProviders
 {
     public interface IDataProvider
     {
-        IList<Candle> GetData(string ticker);
+        /// <summary>
+        /// Получение всех доступных данных по тикеру
+        /// </summary>
+        /// <param name="ticker">Тикер</param>
+        /// <param name="timeframe">Таймфрейм</param>
+        /// <returns>Список свеч</returns>
+        IList<Candle> GetAllData(string ticker, Timeframe timeframe);
 
-        IList<Candle> GetData(string ticker, DateTime dateFrom, DateTime dateTo);
+        /// <summary>
+        /// Получение доступных данных по тикеру за указанный инетрвал времени
+        /// </summary>
+        /// <param name="ticker">Тикер</param>
+        /// <param name="timeframe">Таймфрейм</param>
+        /// <param name="fromDate">Таймштамп начала интервала</param>
+        /// <param name="toDate">Таймштамп конца интервала</param>
+        /// <returns></returns>
+        IList<Candle> GetDataForPeriod(string ticker, Timeframe timeframe, DateTime fromDate, DateTime toDate);
     }
 }

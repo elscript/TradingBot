@@ -13,7 +13,7 @@ namespace TradingBot.Core
         private DateTime _dateTo;
         private IList<Candle> _candlesCache;
 
-        public HistoricalStrategyPlayer(IStrategy strategy, IDataProvider dataProvider, Position startPosition) : base(strategy, dataProvider, startPosition)
+        public HistoricalStrategyPlayer(IStrategy strategy, IDataProducer dataProvider, Position startPosition) : base(strategy, dataProvider, startPosition)
         {
         }
 
@@ -27,25 +27,25 @@ namespace TradingBot.Core
             
         }
 
-        protected override bool ShouldContinue(string ticker)
+        protected override bool ShouldContinue(string ticker, Timeframe timeFrame)
         {
-            _candlesCache = GetDataInternal(ticker);
+            _candlesCache = GetDataInternal(ticker, timeFrame);
             return _candlesCache.Any();
         }
 
-        private IList<Candle> GetDataInternal(string ticker)
+        private IList<Candle> GetDataInternal(string ticker, Timeframe timeFrame)
         {
-            return Provider.GetData(ticker, _dateFrom, _dateTo);
+            return Producer.GetData(ticker, timeFrame, _dateFrom, _dateTo);
         }
 
-        protected override IList<Candle> GetData(string ticker)
+        protected override IList<Candle> GetData(string ticker, Timeframe timeFrame)
         {
             return _candlesCache;
         }
 
         protected override void OnStop()
         {
-            ((HistoryDataProvider)Provider).ClearLastIndex();
+            ((HistoryDataProducer)Producer).ClearLastIndex();
         }
 
         protected override decimal GetAmount(decimal initialAmount, string currency)
@@ -55,13 +55,18 @@ namespace TradingBot.Core
 
         protected override void SetCurrentPosition()
         {
-
+            //TODO выставление позиции
         }
 
         public void SetDateRange(DateTime dateFrom, DateTime dateTo)
         {
             _dateFrom = dateFrom;
             _dateTo = dateTo;
+        }
+
+        protected override void OnSetStopLoss(decimal price)
+        {
+            //TODO выставить стоп
         }
     }
 }

@@ -10,6 +10,10 @@ namespace TradingBot.Core
     /// </summary>
     public class LastForwardThenPreviousStrategy : IStrategy
     {
+        public bool AllowLong { get; }
+        public bool AllowShort { get; }
+        public decimal MaxLoosePercentage { get; }
+
         public LastForwardThenPreviousStrategy(decimal maxLoosePercentage, bool allowLong, bool allowShort)
         {
             AllowLong = allowLong;
@@ -19,15 +23,15 @@ namespace TradingBot.Core
 
         public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice)
         {
-            var localMinimums = FindLocalMinimums(samples);
-            var localMaximums = FindLocalMaximums(samples);
-            localMinimums = FillMinimumsArea(localMinimums, localMaximums);
-            localMaximums = FillMaximumsArea(localMaximums, localMinimums);
+            var localMinimums = ExtremumArea.FindLocalMinimums(samples);
+            var localMaximums = ExtremumArea.FindLocalMaximums(samples);
+            localMinimums = ExtremumArea.FillMinimumsArea(localMinimums, localMaximums);
+            localMaximums = ExtremumArea.FillMaximumsArea(localMaximums, localMinimums);
 
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
             if (lastSellPrice != null)
             {
-                var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMaximums, sample, lastSellPrice.Value, PositionDirection.Short);
+                var lastExtremumForPrice = ExtremumArea.GetLastExtremumForPriceBeforeSample(localMaximums, sample, lastSellPrice.Value, PositionDirection.Short);
                 if (lastExtremumForPrice != null)
                 {
                     var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.Close;
@@ -47,8 +51,8 @@ namespace TradingBot.Core
 
             var lastLocalMinimumPassed = false;
             var lastLocalMaximumPassed = false;
-            var lastMaximumBeforeSample = GetLastExtremumBeforeSample(localMaximums, sample);
-            var lastMinimumBeforeSample = GetLastExtremumBeforeSample(localMinimums, sample);
+            var lastMaximumBeforeSample = ExtremumArea.GetLastExtremumBeforeSample(localMaximums, sample);
+            var lastMinimumBeforeSample = ExtremumArea.GetLastExtremumBeforeSample(localMinimums, sample);
 
             if (lastMaximumBeforeSample != null && lastMinimumBeforeSample != null)
             {
@@ -71,15 +75,15 @@ namespace TradingBot.Core
 
         public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice)
         {
-            var localMinimums = FindLocalMinimums(samples);
-            var localMaximums = FindLocalMaximums(samples);
-            localMinimums = FillMinimumsArea(localMinimums, localMaximums);
-            localMaximums = FillMaximumsArea(localMaximums, localMinimums);
+            var localMinimums = ExtremumArea.FindLocalMinimums(samples);
+            var localMaximums = ExtremumArea.FindLocalMaximums(samples);
+            localMinimums = ExtremumArea.FillMinimumsArea(localMinimums, localMaximums);
+            localMaximums = ExtremumArea.FillMaximumsArea(localMaximums, localMinimums);
 
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
             if (lastBuyPrice != null)
             {
-                var lastExtremumForPrice = GetLastExtremumForPriceBeforeSample(localMinimums, sample, lastBuyPrice.Value, PositionDirection.Long);
+                var lastExtremumForPrice = ExtremumArea.GetLastExtremumForPriceBeforeSample(localMinimums, sample, lastBuyPrice.Value, PositionDirection.Long);
                 if (lastExtremumForPrice != null)
                 {
                     var stopLossExtremumPrice = lastExtremumForPrice.CurrentExtremum.Candle.Close;
@@ -98,8 +102,8 @@ namespace TradingBot.Core
 
             var lastLocalMinimumPassed = false;
             var lastLocalMaximumPassed = false;
-            var lastMaximumBeforeSample = GetLastExtremumBeforeSample(localMaximums, sample);
-            var lastMinimumBeforeSample = GetLastExtremumBeforeSample(localMinimums, sample);
+            var lastMaximumBeforeSample = ExtremumArea.GetLastExtremumBeforeSample(localMaximums, sample);
+            var lastMinimumBeforeSample = ExtremumArea.GetLastExtremumBeforeSample(localMinimums, sample);
 
             if (lastMaximumBeforeSample != null && lastMinimumBeforeSample != null)
             {
@@ -120,85 +124,9 @@ namespace TradingBot.Core
             };
         }
 
-        private IList<ExtremumArea> FindLocalMinimums(IList<DataSample> samples)
+        public decimal GetStopLossPrice(IList<DataSample> samples, DataSample sample, Position position)
         {
-            var result = new List<ExtremumArea>();
-            for (int i = 1; i < samples.Count - 1; i++)
-            {
-                if (samples[i].Candle.Low < samples[i - 1].Candle.Low &&
-                    samples[i].Candle.Low < samples[i + 1].Candle.Low)
-                {
-                    result.Add(
-                        new ExtremumArea()
-                        {
-                            CurrentExtremum = samples[i],
-                            Type = ExtremumType.Minimum
-                        }
-                    );
-                }
-            }
-            return result;
+            return 0; //TODO убрать хардкод
         }
-
-        private IList<ExtremumArea> FindLocalMaximums(IList<DataSample> samples)
-        {
-            var result = new List<ExtremumArea>();
-            for (int i = 1; i < samples.Count - 1; i++)
-            {
-                if (samples[i].Candle.High > samples[i - 1].Candle.High &&
-                    samples[i].Candle.High > samples[i + 1].Candle.High)
-                {
-                    result.Add(
-                        new ExtremumArea()
-                        {
-                            CurrentExtremum = samples[i],
-                            Type = ExtremumType.Maximum
-                        }
-                    );
-                }
-            }
-            return result;
-        }
-
-        private IList<ExtremumArea> FillMinimumsArea(IList<ExtremumArea> minimums, IList<ExtremumArea> maximums)
-        {
-            // Для каждого минимума заполняем предыдущий минимум и максимум
-            for (int i = 1; i < minimums.Count; i++)
-            {
-                minimums[i].LastLocalMinimum = minimums[i - 1].CurrentExtremum;
-                minimums[i].LastLocalMaximum = maximums.LastOrDefault(m =>
-                    m.CurrentExtremum.Candle.Timestamp < minimums[i].CurrentExtremum.Candle.Timestamp)
-                    ?.CurrentExtremum;
-            }
-            return minimums;
-        }
-
-        private IList<ExtremumArea> FillMaximumsArea(IList<ExtremumArea> maximums, IList<ExtremumArea> minimums)
-        {
-            // Для каждого максимума заполняем предыдущий максимум и минимум
-            for (int i = 1; i < maximums.Count; i++)
-            {
-                maximums[i].LastLocalMaximum = maximums[i - 1].CurrentExtremum;
-                maximums[i].LastLocalMinimum = minimums.LastOrDefault(m =>
-                    m.CurrentExtremum.Candle.Timestamp < maximums[i].CurrentExtremum.Candle.Timestamp)
-                    ?.CurrentExtremum;
-            }
-            return maximums;
-        }
-
-        private ExtremumArea GetLastExtremumBeforeSample(IList<ExtremumArea> extremums, DataSample sample)
-        {
-            return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp);
-        }
-
-        private ExtremumArea GetLastExtremumForPriceBeforeSample(IList<ExtremumArea> extremums, DataSample sample, decimal price, PositionDirection direction)
-        {
-            return extremums.LastOrDefault(m =>
-                m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp && direction == PositionDirection.Long ? m.CurrentExtremum.Candle.High < price : m.CurrentExtremum.Candle.Low < price);
-        }
-
-        public bool AllowLong { get; }
-        public bool AllowShort { get; }
-        public decimal MaxLoosePercentage { get; }
     }
 }

@@ -21,5 +21,7 @@ namespace TradingBot.Core
         public string Ticker { get; set; }
 
         public decimal Amount { get; set; }
+
+        public decimal StopLossPrice { get; set; }
     }
 }
