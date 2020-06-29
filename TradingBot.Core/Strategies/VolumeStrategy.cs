@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace TradingBot.Core.Strategies
@@ -10,19 +11,109 @@ namespace TradingBot.Core.Strategies
         public bool AllowShort { get; }
         public decimal MaxLoosePercentage { get; }
 
-        public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice)
+        private readonly int _stopLossAdditionalValuePercentage;
+        private readonly int _minimumProfitMultiplicator;
+
+        public VolumeStrategy(int stopLossAdditionalValuePercentage, int minimumProfitMultiplicator)
         {
-            throw new NotImplementedException();
+            _stopLossAdditionalValuePercentage = stopLossAdditionalValuePercentage;
+            _minimumProfitMultiplicator = minimumProfitMultiplicator;
+        }
+
+        public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, Position position)
+        {
+            var indexOfSample = samples.IndexOf(sample);
+            var previousSample = samples[indexOfSample - 1];
+            var signalTriggered = false;
+            if (samples.Count() > 1
+                && sample.CandleColor == Common.CandleColor.Green
+                && (previousSample.CandleColor == Common.CandleColor.Red || previousSample.CandleColor == Common.CandleColor.Grey)
+                && sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open))
+            {
+                if (position != null)
+                {
+                    if (Math.Abs(sample.Candle.Close - position.OpenPrice) > Math.Abs(position.OpenPrice - position.StopLossPrice) * _minimumProfitMultiplicator)
+                    {
+                        signalTriggered = true;
+                    }
+                } 
+                else
+                {
+                    signalTriggered = true;
+                }
+            }
+            else
+            {
+                signalTriggered = false;
+            }
+
+            return new SignalResult()
+            {
+                ByStopLoss = false,
+                SignalTriggered = signalTriggered
+            };
+        }
+
+        public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, Position position)
+        {
+            var indexOfSample = samples.IndexOf(sample);
+            var previousSample = samples[indexOfSample - 1];
+            var signalTriggered = false;
+            if (samples.Count() > 1
+                && (sample.CandleColor == Common.CandleColor.Red)
+                && (previousSample.CandleColor == Common.CandleColor.Green || previousSample.CandleColor == Common.CandleColor.Grey)
+                && sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open))
+            {
+                if (position != null)
+                {
+                    if (Math.Abs(sample.Candle.Close - position.OpenPrice) > Math.Abs(position.OpenPrice - position.StopLossPrice) * _minimumProfitMultiplicator)
+                    {
+                        signalTriggered = true;
+                    }
+                }
+                else
+                {
+                    signalTriggered = true;
+                }
+            }
+            else
+            {
+                signalTriggered = false;
+            }
+
+            return new SignalResult()
+            {
+                ByStopLoss = false,
+                SignalTriggered = signalTriggered
+            };
         }
 
         public decimal GetStopLossPrice(IList<DataSample> samples, DataSample sample, Position position)
         {
-            throw new NotImplementedException();
+            var maximums = ExtremumArea.FindLocalMaximums(samples);
+            var minimums = ExtremumArea.FindLocalMinimums(samples);
+            ExtremumArea lastExtremum;
+            decimal stopLossPrice = 0;
+
+            if (position.Direction == PositionDirection.Long)
+            {
+                lastExtremum = ExtremumArea.GetLastMinimumBeforeSample(minimums, sample);
+                stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * _stopLossAdditionalValuePercentage;
+            }
+            else if (position.Direction == PositionDirection.Short)
+            {
+                lastExtremum = ExtremumArea.GetLastMaximumBeforeSample(maximums, sample);
+                stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * _stopLossAdditionalValuePercentage;
+            }
+            return stopLossPrice;
         }
 
-        public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice)
+        public decimal GetAmountForPosition(decimal stopLossPrice, decimal openPrice, decimal currentBalance, int maximumLeverage)
         {
-            throw new NotImplementedException();
+            var multiplicator = (maximumLeverage / ((Math.Abs(openPrice - stopLossPrice) / openPrice) * 100));
+            if (multiplicator > maximumLeverage)
+                multiplicator = maximumLeverage;
+            return multiplicator * currentBalance;
         }
     }
 }

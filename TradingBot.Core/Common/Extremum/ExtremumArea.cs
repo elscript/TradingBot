@@ -78,9 +78,14 @@ namespace TradingBot.Core
             return maximums;
         }
 
-        public static ExtremumArea GetLastExtremumBeforeSample(IList<ExtremumArea> extremums, DataSample sample)
+        public static ExtremumArea GetLastMinimumBeforeSample(IList<ExtremumArea> extremums, DataSample sample)
         {
             return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp);
+        }
+
+        public static ExtremumArea GetLastMaximumBeforeSample(IList<ExtremumArea> extremums, DataSample sample)
+        {
+            return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp > sample.Candle.Timestamp);
         }
 
         public static ExtremumArea GetLastExtremumForPriceBeforeSample(IList<ExtremumArea> extremums, DataSample sample, decimal price, PositionDirection direction)

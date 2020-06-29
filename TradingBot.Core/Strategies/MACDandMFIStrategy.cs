@@ -36,10 +36,10 @@ namespace TradingBot.Core
         public bool AllowShort { get; set; }
 
 
-        public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice)
+        public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, Position position)
         {
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
-            if (lastSellPrice != null && sample.Candle.Close > lastSellPrice + lastSellPrice * (MaxLoosePercentage / 100))
+            if (position != null && sample.Candle.Close > position.OpenPrice + position.OpenPrice * (MaxLoosePercentage / 100))
             {
                 return new SignalResult()
                 {
@@ -79,15 +79,10 @@ namespace TradingBot.Core
             };
         }
 
-        public decimal GetStopLossPrice(IList<DataSample> samples, DataSample sample, Position position)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice)
+        public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, Position position)
         {
             // Проверяем, не сработал ли кастомный стоплосс с учетом максимального процента потерь
-            if (lastBuyPrice != null && sample.Candle.Close < lastBuyPrice - lastBuyPrice * (MaxLoosePercentage / 100))
+            if (position != null && sample.Candle.Close < position.OpenPrice - position.OpenPrice * (MaxLoosePercentage / 100))
             {
                 return new SignalResult()
                 {
@@ -126,6 +121,34 @@ namespace TradingBot.Core
                 SignalTriggered = mfiCheckPassed && macdCheckPassed,
                 ByStopLoss = false
             };
+        }
+
+        public decimal GetStopLossPrice(IList<DataSample> samples, DataSample sample, Position position)
+        {
+            var maximums = ExtremumArea.FindLocalMaximums(samples);
+            var minimums = ExtremumArea.FindLocalMinimums(samples);
+            ExtremumArea lastExtremum;
+            decimal stopLossPrice = 0;
+
+            if (position.Direction == PositionDirection.Long)
+            {
+                lastExtremum = ExtremumArea.GetLastMinimumBeforeSample(minimums, sample);
+                stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * 10; //TODO убрать хардкод
+            }
+            else if (position.Direction == PositionDirection.Short)
+            {
+                lastExtremum = ExtremumArea.GetLastMaximumBeforeSample(maximums, sample);
+                stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * 10; //TODO убрать хардкод
+            }
+            return stopLossPrice;
+        }
+
+        public decimal GetAmountForPosition(decimal stopLossPrice, decimal openPrice, decimal currentBalance, int maximumLeverage)
+        {
+            var multiplicator = (maximumLeverage / ((Math.Abs(openPrice - stopLossPrice) / openPrice) * 100));
+            if (multiplicator > maximumLeverage)
+                multiplicator = maximumLeverage;
+            return multiplicator * currentBalance;
         }
     }
 }

@@ -16,6 +16,7 @@ namespace TradingBot.Core
 
         public IList<Position> PlayedPositions { get; private set; }
         public decimal ProfitRate { get; protected set; }
+        public decimal CurrentBalance { get; protected set; }
 
         protected StrategyPlayer(IStrategy strategy, IDataProducer dataProducer, Position startPosition)
         {
@@ -50,35 +51,51 @@ namespace TradingBot.Core
                 if (_strategy.BuySignal(samples, sample, null).SignalTriggered)
                 {
                     OpenPosition(PositionDirection.Long, sample, ticker, amount);
+                    SetStopLoss(samples, sample, Position);
                 }
                 else if (_strategy.SellSignal(samples, sample, null).SignalTriggered)
                 {
                     OpenPosition(PositionDirection.Short, sample, ticker, amount);
+                    SetStopLoss(samples, sample, Position);
                 }
             }
             else if (Position.Direction == PositionDirection.Long)
             {
-                var signalResult = _strategy.SellSignal(samples, sample, Position.OpenPrice);
+                if (sample.Candle.Low <= Position.StopLossPrice)
+                {
+                    ClosePositionByStopLoss(sample);
+                }
+
+                var signalResult = _strategy.SellSignal(samples, sample, Position);
                 if (signalResult.SignalTriggered)
                 {
-                    ClosePosition(PositionDirection.Long, signalResult.ByStopLoss, sample);
+                    if(Position != null)
+                        ClosePosition(PositionDirection.Long, signalResult.ByStopLoss, sample);
 
                     if (_strategy.AllowShort)
                     {
                         OpenPosition(PositionDirection.Short, sample, ticker, amount);
+                        SetStopLoss(samples, sample, Position);
                     }
                 }
             }
             else if (Position.Direction == PositionDirection.Short)
             {
-                var signalResult = _strategy.BuySignal(samples, sample, Position.OpenPrice);
+                if (sample.Candle.High >= Position.StopLossPrice)
+                {
+                    ClosePositionByStopLoss(sample);
+                }
+
+                var signalResult = _strategy.BuySignal(samples, sample, Position);
                 if (signalResult.SignalTriggered)
                 {
-                    ClosePosition(PositionDirection.Short, signalResult.ByStopLoss, sample);
+                    if (Position != null)
+                        ClosePosition(PositionDirection.Short, signalResult.ByStopLoss, sample);
 
                     if (_strategy.AllowLong)
                     {
                         OpenPosition(PositionDirection.Long, sample, ticker, amount);
+                        SetStopLoss(samples, sample, Position);
                     }
                 }
             }
@@ -111,6 +128,14 @@ namespace TradingBot.Core
             Position = null;
         }
 
+        private void ClosePositionByStopLoss(DataSample sample)
+        {
+            Position.ClosePrice = Position.StopLossPrice;
+            Position.CloseTimestamp = sample.Candle.Timestamp;
+            PlayedPositions.Add(Position);
+            Position = null;
+        }
+
         /// <summary>
         /// Запуск стратегии
         /// </summary>
@@ -118,6 +143,7 @@ namespace TradingBot.Core
         public void Run(string ticker, Timeframe timeFrame, decimal initialAmount, string currency)
         {
             ProfitRate = 0;
+            CurrentBalance = initialAmount;
             PlayedPositions.Clear();
             SetCurrentPosition();
 
@@ -126,7 +152,7 @@ namespace TradingBot.Core
                 Execute(PrepareData(GetData(ticker, timeFrame)), ticker, GetAmount(initialAmount, currency));
             }
 
-            this.ProfitRate = CalculateProfitRate();
+            this.ProfitRate = CalculateProfitRate(initialAmount);
             this.OnStop();
         }
 
@@ -140,7 +166,7 @@ namespace TradingBot.Core
         /// <summary>
         /// Расчет доли прибыли
         /// </summary>
-        private decimal CalculateProfitRate()
+        private decimal CalculateProfitRate(decimal startBalance)
         {
             ProfitRate = 0;
             foreach (var position in PlayedPositions)
@@ -156,7 +182,9 @@ namespace TradingBot.Core
 
         private void SetStopLoss(IList<DataSample> samples, DataSample sample, Position position)
         {
-            this.OnSetStopLoss(_strategy.GetStopLossPrice(samples, sample, position));    
+            var stopLossPrice = _strategy.GetStopLossPrice(samples, sample, position);
+            position.StopLossPrice = stopLossPrice;
+            this.OnSetStopLoss(stopLossPrice);    
         }
     }
 }
