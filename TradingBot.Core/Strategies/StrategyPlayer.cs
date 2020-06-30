@@ -13,17 +13,21 @@ namespace TradingBot.Core
         protected Position Position;
         private readonly IStrategy _strategy;
         protected IDataProducer Producer;
+        protected decimal Fee;
+        protected int MaximumLeverage;
 
         public IList<Position> PlayedPositions { get; private set; }
         public decimal ProfitRate { get; protected set; }
         public decimal CurrentBalance { get; protected set; }
 
-        protected StrategyPlayer(IStrategy strategy, IDataProducer dataProducer, Position startPosition)
+        protected StrategyPlayer(IStrategy strategy, IDataProducer dataProducer, Position startPosition, decimal fee, int maximumLeverage)
         {
             _strategy = strategy;
             Producer = dataProducer;
             PlayedPositions = new List<Position>();
             Position = startPosition;
+            Fee = fee;
+            maximumLeverage = MaximumLeverage;
         }
 
         protected abstract void OnOpenPosition(Position position);
@@ -33,6 +37,8 @@ namespace TradingBot.Core
         protected abstract void OnSetStopLoss(decimal price);
 
         protected abstract void OnStop();
+
+        protected abstract void OnClosePositionByStopLoss(Position position);
 
         protected abstract bool ShouldContinue(string ticker, Timeframe timeframe);
 
@@ -50,12 +56,14 @@ namespace TradingBot.Core
             {
                 if (_strategy.BuySignal(samples, sample, null).SignalTriggered)
                 {
-                    OpenPosition(PositionDirection.Long, sample, ticker, amount);
+                    var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Long, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
+                    OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount);
                     SetStopLoss(samples, sample, Position);
                 }
                 else if (_strategy.SellSignal(samples, sample, null).SignalTriggered)
                 {
-                    OpenPosition(PositionDirection.Short, sample, ticker, amount);
+                    var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Short, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
+                    OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount);
                     SetStopLoss(samples, sample, Position);
                 }
             }
@@ -74,7 +82,8 @@ namespace TradingBot.Core
 
                     if (_strategy.AllowShort)
                     {
-                        OpenPosition(PositionDirection.Short, sample, ticker, amount);
+                        var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Short, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
+                        OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount);
                         SetStopLoss(samples, sample, Position);
                     }
                 }
@@ -94,15 +103,11 @@ namespace TradingBot.Core
 
                     if (_strategy.AllowLong)
                     {
-                        OpenPosition(PositionDirection.Long, sample, ticker, amount);
+                        var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Long, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
+                        OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount);
                         SetStopLoss(samples, sample, Position);
                     }
                 }
-            }
-
-            if (Position != null)
-            {
-                SetStopLoss(samples, sample, Position);
             }
         }
 
@@ -133,6 +138,7 @@ namespace TradingBot.Core
             Position.ClosePrice = Position.StopLossPrice;
             Position.CloseTimestamp = sample.Candle.Timestamp;
             PlayedPositions.Add(Position);
+            this.OnClosePositionByStopLoss(Position);
             Position = null;
         }
 

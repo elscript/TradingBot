@@ -41,7 +41,9 @@ namespace TestingConsole
                         60000
                     ), 
                     _bitfinexManager,
-                    lastPosition);
+                    lastPosition,
+                    0.004m,
+                    3);
 
                 strategyPlayer.Run(ticker, timeframe, balance, currency);
                 //var percentOfProfit = strategyPlayer.Run(data) * 100;

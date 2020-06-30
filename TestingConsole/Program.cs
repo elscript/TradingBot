@@ -32,7 +32,7 @@ namespace TestingConsole
                 "BTCUSDT",
                 Timeframe.FiveteenMinute,
                 100,
-                0.4,
+                0.004m,
                 new DateTime(2017, 7, 1),
                 new DateTime(2020, 6, 27)
                 );

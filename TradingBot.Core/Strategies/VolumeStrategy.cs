@@ -23,6 +23,13 @@ namespace TradingBot.Core.Strategies
         public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, Position position)
         {
             var indexOfSample = samples.IndexOf(sample);
+            if (samples.Count() <= 1)
+                return new SignalResult()
+                {
+                    ByStopLoss = false,
+                    SignalTriggered = false
+                };
+
             var previousSample = samples[indexOfSample - 1];
             var signalTriggered = false;
             if (samples.Count() > 1
@@ -57,6 +64,13 @@ namespace TradingBot.Core.Strategies
         public SignalResult SellSignal(IList<DataSample> samples, DataSample sample, Position position)
         {
             var indexOfSample = samples.IndexOf(sample);
+            if (samples.Count() <= 1)
+                return new SignalResult()
+                {
+                    ByStopLoss = false,
+                    SignalTriggered = false
+                };
+
             var previousSample = samples[indexOfSample - 1];
             var signalTriggered = false;
             if (samples.Count() > 1
@@ -98,12 +112,12 @@ namespace TradingBot.Core.Strategies
             if (position.Direction == PositionDirection.Long)
             {
                 lastExtremum = ExtremumArea.GetLastMinimumBeforeSample(minimums, sample);
-                stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * _stopLossAdditionalValuePercentage;
+                stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * _stopLossAdditionalValuePercentage / 100;
             }
             else if (position.Direction == PositionDirection.Short)
             {
                 lastExtremum = ExtremumArea.GetLastMaximumBeforeSample(maximums, sample);
-                stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * _stopLossAdditionalValuePercentage;
+                stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * _stopLossAdditionalValuePercentage / 100;
             }
             return stopLossPrice;
         }

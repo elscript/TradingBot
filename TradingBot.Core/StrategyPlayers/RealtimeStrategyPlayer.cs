@@ -12,7 +12,7 @@ namespace TradingBot.Core
     {
         private readonly BitfinexManager _bitfinexManager;
 
-        public RealtimeStrategyPlayer(IStrategy strategy, IDataProducer dataProvider, BitfinexManager bitfinexManager, Position startPosition) : base(strategy, dataProvider, startPosition)
+        public RealtimeStrategyPlayer(IStrategy strategy, IDataProducer dataProvider, BitfinexManager bitfinexManager, Position startPosition, decimal fee, int maximumLeverage) : base(strategy, dataProvider, startPosition, fee, maximumLeverage)
         {
             _bitfinexManager = bitfinexManager;
         }
@@ -83,6 +83,11 @@ namespace TradingBot.Core
         }
 
         protected override void OnSetStopLoss(decimal price)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void OnClosePositionByStopLoss(Position position)
         {
             throw new NotImplementedException();
         }

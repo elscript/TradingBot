@@ -13,18 +13,21 @@ namespace TradingBot.Core
         private DateTime _dateTo;
         private IList<Candle> _candlesCache;
 
-        public HistoricalStrategyPlayer(IStrategy strategy, IDataProducer dataProvider, Position startPosition) : base(strategy, dataProvider, startPosition)
+        public HistoricalStrategyPlayer(IStrategy strategy, IDataProducer dataProducer, Position startPosition, decimal fee, int maximumLeverage) : base(strategy, dataProducer, startPosition, fee, maximumLeverage)
         {
         }
 
         protected override void OnOpenPosition(Position position)
         {
-        
+            CurrentBalance = CurrentBalance - (position.Amount * position.OpenPrice * Fee);
         }
 
         protected override void OnClosePosition(Position position)
         {
-            
+            if (position.Direction == PositionDirection.Long)
+                CurrentBalance = CurrentBalance + (position.Amount * (position.ClosePrice - position.OpenPrice)) - (position.Amount * position.ClosePrice) * Fee;
+            else if (position.Direction == PositionDirection.Short)
+                CurrentBalance = CurrentBalance + (position.Amount * (position.OpenPrice - position.ClosePrice)) - (position.Amount * position.ClosePrice) * Fee;
         }
 
         protected override bool ShouldContinue(string ticker, Timeframe timeFrame)
@@ -50,7 +53,7 @@ namespace TradingBot.Core
 
         protected override decimal GetAmount(decimal initialAmount, string currency)
         {
-            return initialAmount;
+            return CurrentBalance;
         }
 
         protected override void SetCurrentPosition()
@@ -67,6 +70,11 @@ namespace TradingBot.Core
         protected override void OnSetStopLoss(decimal price)
         {
             //TODO выставить стоп
+        }
+
+        protected override void OnClosePositionByStopLoss(Position position)
+        {
+            CurrentBalance = CurrentBalance - (position.Amount * Math.Abs(position.OpenPrice - position.StopLossPrice));
         }
     }
 }
