@@ -27,7 +27,8 @@ namespace TestingConsole
             var strategyPlayer = new HistoricalStrategyPlayer(
                 new VolumeStrategy(
                     10,
-                    3
+                    3,
+                    1
                 ),
                 new HistoryDataProducer(
                     new StorageDataProvider(),
@@ -38,6 +39,7 @@ namespace TestingConsole
             );
 
             decimal percentOfProfit = 0;
+            strategyPlayer.CurrentBalance = startDeposit;
 
             for (DateTime current = dateFrom; current < dateTo; current = current.AddMonths(1))
             {

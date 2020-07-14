@@ -14,10 +14,11 @@ namespace TradingBot.Core.Strategies
         private readonly int _stopLossAdditionalValuePercentage;
         private readonly int _minimumProfitMultiplicator;
 
-        public VolumeStrategy(int stopLossAdditionalValuePercentage, int minimumProfitMultiplicator)
+        public VolumeStrategy(int stopLossAdditionalValuePercentage, int minimumProfitMultiplicator, decimal maxLoosePercentage)
         {
             _stopLossAdditionalValuePercentage = stopLossAdditionalValuePercentage;
             _minimumProfitMultiplicator = minimumProfitMultiplicator;
+            MaxLoosePercentage = maxLoosePercentage;
         }
 
         public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, Position position)
@@ -112,19 +113,39 @@ namespace TradingBot.Core.Strategies
             if (position.Direction == PositionDirection.Long)
             {
                 lastExtremum = ExtremumArea.GetLastMinimumBeforeSample(minimums, sample);
-                stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * _stopLossAdditionalValuePercentage / 100;
+                if (lastExtremum == null)
+                {
+                    stopLossPrice = sample.Candle.Low - (position.OpenPrice - sample.Candle.Low) * _stopLossAdditionalValuePercentage / 100;
+                }
+                else
+                {
+                    stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * _stopLossAdditionalValuePercentage / 100;
+                }
             }
             else if (position.Direction == PositionDirection.Short)
             {
                 lastExtremum = ExtremumArea.GetLastMaximumBeforeSample(maximums, sample);
-                stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * _stopLossAdditionalValuePercentage / 100;
+                if (lastExtremum == null)
+                {
+                    stopLossPrice = sample.Candle.High + (sample.Candle.High - position.OpenPrice) * _stopLossAdditionalValuePercentage / 100;
+                }
+                else
+                {
+                    stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * _stopLossAdditionalValuePercentage / 100;
+                }
             }
             return stopLossPrice;
         }
 
         public decimal GetAmountForPosition(decimal stopLossPrice, decimal openPrice, decimal currentBalance, int maximumLeverage)
         {
-            var multiplicator = (maximumLeverage / ((Math.Abs(openPrice - stopLossPrice) / openPrice) * 100));
+            var delta = Math.Abs(openPrice - stopLossPrice);
+            if (delta == 0)
+            {
+                delta = 1; // TODO хак, надо разобраться почему иногда ноль
+            }
+
+            var multiplicator = (MaxLoosePercentage / (delta / openPrice));
             if (multiplicator > maximumLeverage)
                 multiplicator = maximumLeverage;
             return multiplicator * currentBalance;

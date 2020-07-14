@@ -18,7 +18,7 @@ namespace TradingBot.Core
 
         public IList<Position> PlayedPositions { get; private set; }
         public decimal ProfitRate { get; protected set; }
-        public decimal CurrentBalance { get; protected set; }
+        public decimal CurrentBalance { get; set; }
 
         protected StrategyPlayer(IStrategy strategy, IDataProducer dataProducer, Position startPosition, decimal fee, int maximumLeverage)
         {
@@ -27,7 +27,7 @@ namespace TradingBot.Core
             PlayedPositions = new List<Position>();
             Position = startPosition;
             Fee = fee;
-            maximumLeverage = MaximumLeverage;
+            MaximumLeverage = maximumLeverage;
         }
 
         protected abstract void OnOpenPosition(Position position);
@@ -57,13 +57,13 @@ namespace TradingBot.Core
                 if (_strategy.BuySignal(samples, sample, null).SignalTriggered)
                 {
                     var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Long, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
-                    OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount);
+                    OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount / sample.Candle.High);
                     SetStopLoss(samples, sample, Position);
                 }
                 else if (_strategy.SellSignal(samples, sample, null).SignalTriggered)
                 {
                     var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Short, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
-                    OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount);
+                    OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount / sample.Candle.Low);
                     SetStopLoss(samples, sample, Position);
                 }
             }
@@ -83,7 +83,7 @@ namespace TradingBot.Core
                     if (_strategy.AllowShort)
                     {
                         var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Short, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
-                        OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount);
+                        OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount / sample.Candle.Low);
                         SetStopLoss(samples, sample, Position);
                     }
                 }
@@ -104,7 +104,7 @@ namespace TradingBot.Core
                     if (_strategy.AllowLong)
                     {
                         var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Long, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
-                        OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount);
+                        OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount / sample.Candle.High);
                         SetStopLoss(samples, sample, Position);
                     }
                 }

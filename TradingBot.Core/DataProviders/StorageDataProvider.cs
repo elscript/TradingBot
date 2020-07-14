@@ -16,6 +16,7 @@ namespace TradingBot.Core.DataProviders
             {
                 candles = db.Candles
                     .Where(c => c.TimeFrame == timeframe)
+                    .OrderBy(c => c.Timestamp)
                     .ToList();
             }
 

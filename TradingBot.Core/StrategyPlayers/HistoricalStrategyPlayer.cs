@@ -74,7 +74,7 @@ namespace TradingBot.Core
 
         protected override void OnClosePositionByStopLoss(Position position)
         {
-            CurrentBalance = CurrentBalance - (position.Amount * Math.Abs(position.OpenPrice - position.StopLossPrice));
+            CurrentBalance = CurrentBalance - (position.Amount * Math.Abs(position.OpenPrice - position.StopLossPrice) - (position.Amount * position.StopLossPrice * Fee));
         }
     }
 }

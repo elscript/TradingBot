@@ -8,3 +8,6 @@ from Positions
 
 alter TABLE Positions
 add StopLossPrice DECIMAL(20, 2);
+
+select * from candles
+order by timestamp desc
