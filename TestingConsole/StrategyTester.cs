@@ -14,10 +14,12 @@ namespace TestingConsole
     public class StrategyTester
     {
         private readonly bool writeResultOnly;
+        private readonly IDataProducer producer;
 
-        public StrategyTester(bool writeResultOnly)
+        public StrategyTester(bool writeResultOnly, IDataProducer producer)
         {
             this.writeResultOnly = writeResultOnly;
+            this.producer = producer;
         }
 
         public void Run(string ticker, Timeframe timeframe, decimal startDeposit, decimal fee, DateTime dateFrom, DateTime dateTo)
@@ -35,9 +37,7 @@ namespace TestingConsole
                     true,
                     true
                 ),
-                new HistoryDataProducer(
-                    new StorageDataProvider(),
-                    50),
+                producer,
                 null,
                 fee,
                 3

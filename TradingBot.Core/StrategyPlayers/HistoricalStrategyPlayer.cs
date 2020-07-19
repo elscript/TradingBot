@@ -48,7 +48,7 @@ namespace TradingBot.Core
 
         protected override void OnStop()
         {
-            ((HistoryDataProducer)Producer).ClearLastIndex();
+            Producer.ClearLastIndex();
         }
 
         protected override decimal GetAmount(decimal initialAmount, string currency)

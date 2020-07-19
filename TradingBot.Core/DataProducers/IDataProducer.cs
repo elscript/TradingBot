@@ -11,5 +11,7 @@ namespace TradingBot.Core
         IList<Candle> GetData(string ticker, Timeframe timeframe);
 
         IList<Candle> GetData(string ticker, Timeframe timeframe, DateTime dateFrom, DateTime dateTo);
+
+        void ClearLastIndex();
     }
 }

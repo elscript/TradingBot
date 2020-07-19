@@ -9,6 +9,7 @@ using TradingBot.Core;
 using TradingBot.Core.Api.Binance;
 using TradingBot.Core.Common;
 using TradingBot.Core.DataCrawling;
+using TradingBot.Core.DataProviders;
 
 namespace TestingConsole
 {
@@ -34,9 +35,9 @@ namespace TestingConsole
 
             var currentRunDateFrom = new DateTime(2018, 1, 1);
             var currentRunDateTo = new DateTime(2020, 7, 20);
+            var tester = new StrategyTester(true, new HistoryDataProducer(new StorageDataProvider(), 50));
             while (currentRunDateFrom <= currentRunDateTo)
             {
-                var tester = new StrategyTester(true);
                 tester.Run(
                     "BTCUSDT",
                     Timeframe.FiveteenMinute,
@@ -45,7 +46,7 @@ namespace TestingConsole
                     currentRunDateFrom,
                     new DateTime(2020, 7, 20)
                     );
-                currentRunDateFrom = currentRunDateFrom.AddDays(1);
+                currentRunDateFrom = currentRunDateFrom.AddMonths(1);
             }
 
 

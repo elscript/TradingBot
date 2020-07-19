@@ -31,5 +31,11 @@ namespace TradingBot.Core
         {
             throw new NotImplementedException();
         }
+
+        public void ClearLastIndex()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }
