@@ -32,15 +32,20 @@ namespace TestingConsole
             crawler.CrawlData();
             */
 
-            var tester = new StrategyTester();
-            tester.Run(
-                "BTCUSDT",
-                Timeframe.FiveteenMinute,
-                100,
-                0.004m,
-                new DateTime(2018, 6, 15, 6, 30, 0),
-                new DateTime(2020, 7, 15)
-                );
+            var currentRunDateFrom = new DateTime(2018, 1, 1);
+            while (currentRunDateFrom <= DateTime.UtcNow)
+            {
+                var tester = new StrategyTester(true);
+                tester.Run(
+                    "BTCUSDT",
+                    Timeframe.FiveteenMinute,
+                    100,
+                    0.004m,
+                    currentRunDateFrom,
+                    new DateTime(2020, 7, 20)
+                    );
+                currentRunDateFrom = currentRunDateFrom.AddMonths(1);
+            }
 
 
             /*

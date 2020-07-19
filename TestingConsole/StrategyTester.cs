@@ -13,8 +13,11 @@ namespace TestingConsole
 {
     public class StrategyTester
     {
-        public StrategyTester()
+        private readonly bool writeResultOnly;
+
+        public StrategyTester(bool writeResultOnly)
         {
+            this.writeResultOnly = writeResultOnly;
         }
 
         public void Run(string ticker, Timeframe timeframe, decimal startDeposit, decimal fee, DateTime dateFrom, DateTime dateTo)
@@ -49,14 +52,14 @@ namespace TestingConsole
 
                 strategyPlayer.Run(ticker, timeframe, strategyPlayer.CurrentBalance, currency);
 
-                if (strategyPlayer.PlayedPositions.Count > 0)
+                if (strategyPlayer.PlayedPositions.Count > 0 && !writeResultOnly)
                 {
                     var percentOfProfit = ((strategyPlayer.CurrentBalance - balanceOnPrevStep) / balanceOnPrevStep) * 100;
                     WriteResult(percentOfProfit, strategyPlayer, strategyPlayer.CurrentBalance, currency);
                 }
             }
 
-            Console.WriteLine($"Total percent of profit: {((strategyPlayer.CurrentBalance - startDeposit) / startDeposit) * 100}");
+            Console.WriteLine($"Total percent of profit for period {dateFrom} - {dateTo}: {((strategyPlayer.CurrentBalance - startDeposit) / startDeposit) * 100}");
         }
 
         private static void WriteResult(decimal percentOfProfit, StrategyPlayer strategyPlayer, decimal deposit, string currency)
