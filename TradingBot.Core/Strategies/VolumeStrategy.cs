@@ -14,11 +14,13 @@ namespace TradingBot.Core.Strategies
         private readonly int _stopLossAdditionalValuePercentage;
         private readonly int _minimumProfitMultiplicator;
 
-        public VolumeStrategy(int stopLossAdditionalValuePercentage, int minimumProfitMultiplicator, decimal maxLoosePercentage)
+        public VolumeStrategy(int stopLossAdditionalValuePercentage, int minimumProfitMultiplicator, decimal maxLoosePercentage, bool allowLong, bool allowShort)
         {
             _stopLossAdditionalValuePercentage = stopLossAdditionalValuePercentage;
             _minimumProfitMultiplicator = minimumProfitMultiplicator;
             MaxLoosePercentage = maxLoosePercentage;
+            AllowLong = allowLong;
+            AllowShort = allowShort;
         }
 
         public SignalResult BuySignal(IList<DataSample> samples, DataSample sample, Position position)
@@ -36,7 +38,8 @@ namespace TradingBot.Core.Strategies
             if (samples.Count() > 1
                 && sample.CandleColor == Common.CandleColor.Green
                 && (previousSample.CandleColor == Common.CandleColor.Red || previousSample.CandleColor == Common.CandleColor.Grey)
-                && sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open))
+                && sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open)
+                && IsLastAreaVolumeMoreThanPrevious(samples, sample, 50, 40, 3))
             {
                 if (position != null)
                 {
@@ -77,7 +80,8 @@ namespace TradingBot.Core.Strategies
             if (samples.Count() > 1
                 && (sample.CandleColor == Common.CandleColor.Red)
                 && (previousSample.CandleColor == Common.CandleColor.Green || previousSample.CandleColor == Common.CandleColor.Grey)
-                && sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open))
+                && sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open)
+                && IsLastAreaVolumeMoreThanPrevious(samples, sample, 50, 40, 3))
             {
                 if (position != null)
                 {
@@ -149,6 +153,32 @@ namespace TradingBot.Core.Strategies
             if (multiplicator > maximumLeverage)
                 multiplicator = maximumLeverage;
             return multiplicator * currentBalance;
+        }
+
+        private bool IsLastAreaVolumeMoreThanPrevious(IList<DataSample> samples, DataSample sample, decimal percentage, int samplesPerPrevArea, int samplesPerLastArea)
+        {
+            var indexOfSample = samples.IndexOf(sample);
+            var indexOfFirstSampleInLastArea = indexOfSample - samplesPerLastArea;
+            if (indexOfFirstSampleInLastArea < 0)
+                return false;
+
+            IList<DataSample> targetLastSamples = new List<DataSample>();
+            for (int i = indexOfFirstSampleInLastArea; i <= indexOfSample; i++)
+            {
+                targetLastSamples.Add(samples[i]);
+            }
+
+            var indexOfFirstSampleInPrevArea = indexOfFirstSampleInLastArea - 1 - samplesPerPrevArea;
+            if (indexOfFirstSampleInPrevArea < 0)
+                return false;
+
+            IList<DataSample> targetPrevSamples = new List<DataSample>();
+            for (int i = indexOfFirstSampleInPrevArea; i < indexOfFirstSampleInLastArea; i++)
+            {
+                targetPrevSamples.Add(samples[i]);
+            }
+
+            return (targetLastSamples.Average(s => s.Candle.Volume) / (1 + percentage / 100)) > targetPrevSamples.Average(s => s.Candle.Volume);
         }
     }
 }

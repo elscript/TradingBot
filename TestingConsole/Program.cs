@@ -27,14 +27,19 @@ namespace TestingConsole
                 Console.WriteLine(item);
             }*/
 
+            /*
+            BinanceDataCrawler crawler = new BinanceDataCrawler();
+            crawler.CrawlData();
+            */
+
             var tester = new StrategyTester();
             tester.Run(
                 "BTCUSDT",
                 Timeframe.FiveteenMinute,
                 100,
                 0.004m,
-                new DateTime(2019, 7, 26),
-                new DateTime(2020, 6, 27)
+                new DateTime(2018, 6, 15, 6, 30, 0),
+                new DateTime(2020, 7, 15)
                 );
 
 

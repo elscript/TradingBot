@@ -26,9 +26,11 @@ namespace TestingConsole
 
             var strategyPlayer = new HistoricalStrategyPlayer(
                 new VolumeStrategy(
-                    10,
+                    5,
                     3,
-                    1
+                    0.5m,
+                    true,
+                    true
                 ),
                 new HistoryDataProducer(
                     new StorageDataProvider(),
