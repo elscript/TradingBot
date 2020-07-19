@@ -26,9 +26,9 @@ namespace TestingConsole
 
             var strategyPlayer = new HistoricalStrategyPlayer(
                 new VolumeStrategy(
-                    5,
+                    10,
                     3,
-                    0.5m,
+                    0.1m,
                     true,
                     true
                 ),
@@ -40,37 +40,32 @@ namespace TestingConsole
                 3
             );
 
-            decimal percentOfProfit = 0;
             strategyPlayer.CurrentBalance = startDeposit;
 
             for (DateTime current = dateFrom; current < dateTo; current = current.AddMonths(1))
             {
                 strategyPlayer.SetDateRange(current, current.AddMonths(1));
-                
+                var balanceOnPrevStep = strategyPlayer.CurrentBalance;
+
                 strategyPlayer.Run(ticker, timeframe, strategyPlayer.CurrentBalance, currency);
 
                 if (strategyPlayer.PlayedPositions.Count > 0)
                 {
-                    //CalculateCurrentDeposit(strategyPlayer, ref deposit, fee);
-                    var lastPercentOfProfit = percentOfProfit;
-                    CalculatePercentOfProfit(ref percentOfProfit, strategyPlayer);
-                    WriteResult(percentOfProfit, lastPercentOfProfit, strategyPlayer, strategyPlayer.CurrentBalance, currency);
+                    var percentOfProfit = ((strategyPlayer.CurrentBalance - balanceOnPrevStep) / balanceOnPrevStep) * 100;
+                    WriteResult(percentOfProfit, strategyPlayer, strategyPlayer.CurrentBalance, currency);
                 }
             }
+
+            Console.WriteLine($"Total percent of profit: {((strategyPlayer.CurrentBalance - startDeposit) / startDeposit) * 100}");
         }
 
-        private static void WriteResult(decimal percentOfProfit, decimal lastPercentOfProfit, StrategyPlayer strategyPlayer, decimal deposit, string currency)
+        private static void WriteResult(decimal percentOfProfit, StrategyPlayer strategyPlayer, decimal deposit, string currency)
         {
             Console.WriteLine(
-                $"PercentOfProfit for period {strategyPlayer.PlayedPositions.First().OpenTimestamp} - {strategyPlayer.PlayedPositions.Last().CloseTimestamp} : {percentOfProfit - lastPercentOfProfit}%");;
+                $"PercentOfProfit for period {strategyPlayer.PlayedPositions.First().OpenTimestamp} - {strategyPlayer.PlayedPositions.Last().CloseTimestamp} : {percentOfProfit}%");;
 
             Console.WriteLine($"Deposit after this period : {Math.Round(deposit, 2)} {currency}");
             Console.WriteLine();
-        }
-
-        private static void CalculatePercentOfProfit(ref decimal percentOfProfit, StrategyPlayer strategyPlayer)
-        {
-            percentOfProfit += strategyPlayer.ProfitRate * 100;
         }
 
         private static void CalculateCurrentDeposit(StrategyPlayer strategyPlayer, ref decimal deposit, decimal fee)
