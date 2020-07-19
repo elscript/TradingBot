@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Bitfinex.Net.Objects;
 using Microsoft.EntityFrameworkCore;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -10,7 +11,7 @@ namespace TradingBot.Core
     {
         public DbSet<Position> Positions { get; set; }
 
-        public DbSet<BitfinexCandle> Candles { get; set; }
+        public DbSet<Candle> Candles { get; set; }
 
         public ApplicationContext()
         {

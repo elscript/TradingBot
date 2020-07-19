@@ -4,31 +4,30 @@ using System.Linq;
 using System.Text;
 using Bitfinex.Net.Objects;
 using System.Threading;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
-    public class DelayedDataProvider : IDataProvider
+    public class DelayedDataProducer : IDataProducer
     {
         private BitfinexManager _bitfinexManager;
-        private TimeFrame _timeFrame;
         private int _amount;
         private int _delay;
 
-        public DelayedDataProvider(BitfinexManager bitfinexManager, TimeFrame timeFrame, int amount, int delay)
+        public DelayedDataProducer(BitfinexManager bitfinexManager, int amount, int delay)
         {
             _bitfinexManager = bitfinexManager;
-            _timeFrame = timeFrame;
             _amount = amount;
             _delay = delay;
         }
 
-        public IList<BitfinexCandle> GetData(string ticker)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame)
         {
             Thread.Sleep(_delay);
-            return _bitfinexManager.GetData(ticker, _timeFrame, _amount).SkipLast(1).ToList();
+            return _bitfinexManager.GetData(ticker, timeFrame, _amount).SkipLast(1).ToList();
         }
 
-        public IList<BitfinexCandle> GetData(string ticker, DateTime dateFrom, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame, DateTime dateFrom, DateTime dateTo)
         {
             throw new NotImplementedException();
         }

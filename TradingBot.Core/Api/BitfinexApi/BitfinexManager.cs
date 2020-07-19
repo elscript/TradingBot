@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using Bitfinex.Net;
 using Bitfinex.Net.Objects;
 using CryptoExchange.Net.Authentication;
 using TradingBot.Core;
 using System.Threading;
+using TradingBot.Core.Api;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
-    public class BitfinexManager
+    public class BitfinexManager : IExchangeApi
     {
         private string _accessKey;
         private string _accessSecret;
@@ -38,11 +41,11 @@ namespace TradingBot.Core
         /// <param name="timeFrame">Таймфрейм</param>
         /// <param name="amount">Кол-во свечей</param>
         /// <returns>Список свечей</returns>
-        public IList<BitfinexCandle> GetData(string ticker, TimeFrame timeFrame, int amount)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount)
         {
             var portionCount = amount > 1000 ? 1000 : amount;
 
-            var candles = _client.GetCandles(timeFrame, ticker, portionCount, null, DateTime.Now.ToUniversalTime());
+            var candles = _client.GetCandles(MapTimeframe(timeFrame), ticker, portionCount, null, DateTime.Now.ToUniversalTime());
             IList<BitfinexCandle> candlesData = candles.Data.ToList();
 
             if (portionCount == 1000)
@@ -52,14 +55,14 @@ namespace TradingBot.Core
                     var data = candlesData.ToList();
                     if (data.Count() != 0)
                     {
-                        var morecandles = _client.GetCandles(timeFrame, ticker, 1000, null,
-                            data.Last().Timestamp.AddMinutes(-5));
+                        var morecandles = _client.GetCandles(MapTimeframe(timeFrame), ticker, 1000, null,
+                            data.Last().Timestamp.AddMinutes(-5)); //TODO убрать хардкод
                         candlesData = data.Concat(morecandles.Data).ToList();
                     }
                 }
             }
 
-            return candlesData.OrderBy(d => d.Timestamp).ToList();
+            return MapBitfinexCandleToBotCandles(candlesData.OrderBy(d => d.Timestamp), ticker, timeFrame).ToList();
         }
 
         /// <summary>
@@ -68,14 +71,13 @@ namespace TradingBot.Core
         /// <param name="ticker">Валютная пара</param>
         /// <param name="timeFrame">Таймфрейм</param>
         /// <param name="amount">Кол-во свечей</param>
-        /// <param name="dateFrom">Начало диапазона</param>
         /// <param name="dateTo">Конец диапазона</param>
         /// <returns>Список свечей</returns>
-        public IList<BitfinexCandle> GetData(string ticker, TimeFrame timeFrame, int amount, DateTime dateFrom, DateTime dateTo)
+        public IList<Candle> GetData(string ticker, Timeframe timeFrame, int amount, DateTime dateFrom, DateTime dateTo)
         {
             var portionCount = amount > 1000 ? 1000 : amount;
 
-            var candles = _client.GetCandles(timeFrame, ticker, portionCount, dateFrom, dateTo);
+            var candles = _client.GetCandles(MapTimeframe(timeFrame), ticker, portionCount, null, dateTo);
             IList<BitfinexCandle> candlesData = candles.Data.ToList();
 
             if (portionCount == 1000)
@@ -85,14 +87,14 @@ namespace TradingBot.Core
                     var data = candlesData.ToList();
                     if (data.Count() != 0)
                     {
-                        var morecandles = _client.GetCandles(timeFrame, ticker, 1000, null,
-                            data.Last().Timestamp.AddMinutes(-5));
+                        var morecandles = _client.GetCandles(MapTimeframe(timeFrame), ticker, 1000, null,
+                            data.Last().Timestamp.AddMinutes(-5)); //TODO убрать хардкод
                         candlesData = data.Concat(morecandles.Data).ToList();
                     }
                 }
             }
 
-            return candlesData.OrderBy(d => d.Timestamp).ToList();
+            return MapBitfinexCandleToBotCandles(candlesData.OrderBy(d => d.Timestamp), ticker, timeFrame).ToList();
         }
 
         public BitfinexPosition GetActivePosition(string symbol)
@@ -126,6 +128,75 @@ namespace TradingBot.Core
                 Thread.Sleep(3000);
             }
             return execPrice;
+        }
+
+        private IEnumerable<Candle> MapBitfinexCandleToBotCandles (IEnumerable<BitfinexCandle> bitfinexCandles, string ticker, Timeframe timeFrame)
+        {
+            var botCandles = new List<Candle>();
+            foreach (var bitfinexCandle in bitfinexCandles)
+            {
+                botCandles.Add(new Candle()
+                    {
+                        Timestamp = bitfinexCandle.Timestamp,
+                        Close = bitfinexCandle.Close,
+                        High = bitfinexCandle.High,
+                        Open = bitfinexCandle.Open,
+                        Low = bitfinexCandle.Low,
+                        Volume = bitfinexCandle.Volume,
+                        TimeFrame = timeFrame,
+                        Ticker = ticker
+                    }
+                );
+            }
+
+            return botCandles;
+        }
+
+        private TimeFrame MapTimeframe(Timeframe timeFrame)
+        {
+            var result = new TimeFrame();
+            switch (timeFrame)
+            {
+                case Timeframe.OneMinute:
+                    result = TimeFrame.OneMinute;
+                    break;
+                case Timeframe.FiveMinute:
+                    result = TimeFrame.FiveMinute;
+                    break;
+                case Timeframe.FiveteenMinute:
+                    result = TimeFrame.FiveteenMinute;
+                    break;
+                case Timeframe.ThirtyMinute:
+                    result = TimeFrame.ThirtyMinute;
+                    break;
+                case Timeframe.OneHour:
+                    result = TimeFrame.OneHour;
+                    break;
+                case Timeframe.SixHour:
+                    result = TimeFrame.SixHour;
+                    break;
+                case Timeframe.TwelveHour:
+                    result = TimeFrame.TwelveHour;
+                    break;
+                case Timeframe.OneDay:
+                    result = TimeFrame.OneDay;
+                    break;
+                case Timeframe.SevenDay:
+                    result = TimeFrame.SevenDay;
+                    break;
+                case Timeframe.OneMonth:
+                    result = TimeFrame.OneMonth;
+                    break;
+                default:
+                    break;
+            }
+
+            return result;
+        }
+
+        public bool Buy(string symbol, int amount, decimal price)
+        {
+            throw new NotImplementedException();
         }
     }
 }

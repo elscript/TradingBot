@@ -10,24 +10,6 @@ namespace TradingBot.Core
     public interface IStrategy
     {
         /// <summary>
-        /// Сигнал на покупку
-        /// </summary>
-        /// <param name="samples">Сэмплы данных</param>
-        /// <param name="sample">Текущий сэмпл</param>
-        /// <param name="lastSellPrice">Цена предыдущей предшествующией продажи, если была, иначе null</param>
-        /// <returns></returns>
-        SignalResult BuySignal(IList<DataSample> samples, DataSample sample, decimal? lastSellPrice);
-
-        /// <summary>
-        /// Сигнал на продажу
-        /// </summary>
-        /// <param name="samples">Сэмплы данных</param>
-        /// <param name="sample">Текущий сэмпл</param>
-        /// <param name="lastBuyPrice">Цена предыдущей предшествующией покупки, если была, иначе null</param>
-        /// <returns></returns>
-        SignalResult SellSignal(IList<DataSample> samples, DataSample sample, decimal? lastBuyPrice);
-
-        /// <summary>
         /// Стратегия позволяет совершать Long-сделки
         /// </summary>
         bool AllowLong { get; }
@@ -41,5 +23,42 @@ namespace TradingBot.Core
         /// Максимально допустимый процент потерь с позиции
         /// </summary>
         decimal MaxLoosePercentage { get; }
+
+        /// <summary>
+        /// Сигнал на покупку
+        /// </summary>
+        /// <param name="samples">Сэмплы данных</param>
+        /// <param name="sample">Текущий сэмпл</param>
+        /// <param name="lastSellPrice">Цена предыдущей предшествующией продажи, если была, иначе null</param>
+        /// <returns></returns>
+        SignalResult BuySignal(IList<DataSample> samples, DataSample sample, Position position);
+
+        /// <summary>
+        /// Сигнал на продажу
+        /// </summary>
+        /// <param name="samples">Сэмплы данных</param>
+        /// <param name="sample">Текущий сэмпл</param>
+        /// <param name="lastBuyPrice">Цена предыдущей предшествующией покупки, если была, иначе null</param>
+        /// <returns></returns>
+        SignalResult SellSignal(IList<DataSample> samples, DataSample sample, Position position);
+
+        /// <summary>
+        /// Получить цену для установки стопа
+        /// </summary>
+        /// <param name="samples">Сэмплы данных</param>
+        /// <param name="sample">Текущий сэмпл</param>
+        /// <param name="position">Текущая позиция</param>
+        /// <returns></returns>
+        decimal GetStopLossPrice(IList<DataSample> samples, DataSample sample, Position position);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stopLossPrice"></param>
+        /// <param name="openPrice"></param>
+        /// <param name="currentBalance"></param>
+        /// <param name="maximumLeverage"></param>
+        /// <returns></returns>
+        decimal GetAmountForPosition(decimal stopLossPrice, decimal openPrice, decimal currentBalance, int maximumLeverage);
     }
 }

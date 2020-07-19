@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bitfinex.Net.Objects;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -10,9 +11,9 @@ namespace TradingBot.Core
     {
         public IList<DataSample> Samples { get; private set; }
 
-        public CandlesDataProcessor(IList<BitfinexCandle> candles)
+        public CandlesDataProcessor(IList<Candle> candles)
         {
-            var orderedCandles = candles.OrderBy(t => t.Timestamp).ToList<BitfinexCandle>();
+            var orderedCandles = candles.OrderBy(t => t.Timestamp).ToList<Candle>();
 
             Samples = new List<DataSample>();
             foreach (var candle in orderedCandles)

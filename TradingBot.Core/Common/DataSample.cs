@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Bitfinex.Net.Objects;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core
 {
@@ -11,10 +12,29 @@ namespace TradingBot.Core
     /// </summary>
     public class DataSample
     {
-        public DataSample(BitfinexCandle candle)
+        private CandleColor _color;
+
+        public DataSample(Candle candle)
         {
             Candle = candle;
-            Indicators = new Dictionary<string, IIndicator>();    
+            Indicators = new Dictionary<string, IIndicator>();
+            FillColor();
+        }
+
+        private void FillColor()
+        {
+            if (Candle.Close > Candle.Open)
+            {
+                _color = CandleColor.Green;
+            }
+            else if(Candle.Close < Candle.Open)
+            {
+                _color = CandleColor.Red;
+            }
+            else if (Candle.Close == Candle.Open)
+            {
+                _color = CandleColor.Grey;
+            }
         }
 
         /// <summary>
@@ -30,7 +50,7 @@ namespace TradingBot.Core
         /// <summary>
         /// Данные свечи
         /// </summary>
-        public BitfinexCandle Candle { get; private set; }
+        public Candle Candle { get; private set; }
 
         /// <summary>
         /// Типичная цена
@@ -55,5 +75,14 @@ namespace TradingBot.Core
         /// Коллекция индикаторов
         /// </summary>
         public IDictionary<string, IIndicator> Indicators { get; }
+
+        public CandleColor CandleColor { 
+            get {
+                return _color;
+            } 
+            private set { 
+                _color = value; 
+            }
+        }
     }
 }
