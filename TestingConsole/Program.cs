@@ -33,7 +33,8 @@ namespace TestingConsole
             */
 
             var currentRunDateFrom = new DateTime(2018, 1, 1);
-            while (currentRunDateFrom <= DateTime.UtcNow)
+            var currentRunDateTo = new DateTime(2020, 7, 20);
+            while (currentRunDateFrom <= currentRunDateTo)
             {
                 var tester = new StrategyTester(true);
                 tester.Run(
@@ -44,7 +45,7 @@ namespace TestingConsole
                     currentRunDateFrom,
                     new DateTime(2020, 7, 20)
                     );
-                currentRunDateFrom = currentRunDateFrom.AddMonths(1);
+                currentRunDateFrom = currentRunDateFrom.AddDays(1);
             }
 
 
