@@ -33,9 +33,9 @@ namespace TestingConsole
             crawler.CrawlData();
             */
 
-            var currentRunDateFrom = new DateTime(2018, 1, 1);
+            var currentRunDateFrom = new DateTime(2019, 1, 1);
             var currentRunDateTo = new DateTime(2020, 7, 20);
-            var tester = new StrategyTester(true, new HistoryDataProducer(new StorageDataProvider(), 50));
+            var tester = new StrategyTester(false, new HistoryDataProducer(new StorageDataProvider(), 50));
             while (currentRunDateFrom <= currentRunDateTo)
             {
                 tester.Run(
@@ -46,7 +46,7 @@ namespace TestingConsole
                     currentRunDateFrom,
                     new DateTime(2020, 7, 20)
                     );
-                currentRunDateFrom = currentRunDateFrom.AddMonths(1);
+                currentRunDateFrom = currentRunDateFrom.AddDays(1);
             }
 
 
