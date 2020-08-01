@@ -132,12 +132,12 @@ namespace TradingBot.Core
 
             if (position.Direction == PositionDirection.Long)
             {
-                lastExtremum = ExtremumArea.GetLastMinimumBeforeSample(minimums, sample);
+                lastExtremum = ExtremumArea.GetLastMinimumBeforeAndWithSample(minimums, sample);
                 stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * 10; //TODO убрать хардкод
             }
             else if (position.Direction == PositionDirection.Short)
             {
-                lastExtremum = ExtremumArea.GetLastMaximumBeforeSample(maximums, sample);
+                lastExtremum = ExtremumArea.GetLastMaximumBeforeAndWithSample(maximums, sample);
                 stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * 10; //TODO убрать хардкод
             }
             return stopLossPrice;

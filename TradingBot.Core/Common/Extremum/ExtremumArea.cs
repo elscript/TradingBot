@@ -29,6 +29,18 @@ namespace TradingBot.Core
                     );
                 }
             }
+
+            var lastSample = samples.Last();
+            if (result.Any() && lastSample.Candle.Low < result.Last().CurrentExtremum.Candle.Low)
+            {
+                result.Add(
+                        new ExtremumArea()
+                        {
+                            CurrentExtremum = lastSample,
+                            Type = ExtremumType.Minimum
+                        }
+                    );
+            }
             return result;
         }
 
@@ -48,6 +60,18 @@ namespace TradingBot.Core
                         }
                     );
                 }
+            }
+
+            var lastSample = samples.Last();
+            if (result.Any() && lastSample.Candle.High > result.Last().CurrentExtremum.Candle.High)
+            {
+                result.Add(
+                        new ExtremumArea()
+                        {
+                            CurrentExtremum = lastSample,
+                            Type = ExtremumType.Maximum
+                        }
+                    );
             }
             return result;
         }
@@ -78,14 +102,14 @@ namespace TradingBot.Core
             return maximums;
         }
 
-        public static ExtremumArea GetLastMinimumBeforeSample(IList<ExtremumArea> extremums, DataSample sample)
+        public static ExtremumArea GetLastMinimumBeforeAndWithSample(IList<ExtremumArea> extremums, DataSample sample)
         {
-            return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp);
+            return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp <= sample.Candle.Timestamp);
         }
 
-        public static ExtremumArea GetLastMaximumBeforeSample(IList<ExtremumArea> extremums, DataSample sample)
+        public static ExtremumArea GetLastMaximumBeforeAndWithSample(IList<ExtremumArea> extremums, DataSample sample)
         {
-            return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp < sample.Candle.Timestamp);
+            return extremums.LastOrDefault(m => m.CurrentExtremum.Candle.Timestamp <= sample.Candle.Timestamp);
         }
 
         public static ExtremumArea GetLastExtremumForPriceBeforeSample(IList<ExtremumArea> extremums, DataSample sample, decimal price, PositionDirection direction)
