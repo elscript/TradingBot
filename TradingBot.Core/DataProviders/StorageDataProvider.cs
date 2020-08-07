@@ -15,7 +15,7 @@ namespace TradingBot.Core.DataProviders
             using (ApplicationContext db = new ApplicationContext())
             {
                 candles = db.Candles
-                    .Where(c => c.TimeFrame == timeframe)
+                    .Where(c => c.Ticker == ticker && c.TimeFrame == timeframe)
                     .OrderBy(c => c.Timestamp)
                     .ToList();
             }

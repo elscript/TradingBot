@@ -9,13 +9,15 @@ namespace TradingBot.Core.DataCrawling
 {
     public class BinanceDataCrawler
     {
-        public void CrawlData()
-        {
-            var ticker = "BTCUSDT";
-            var _accessKey = "";
-            var _accessSecret = "";
+        BinanceManager _binanceMananger;
 
-            var binanceMananger = new BinanceManager(_accessKey, _accessSecret);
+        public BinanceDataCrawler(BinanceManager binanceMananger)
+        {
+            _binanceMananger = binanceMananger;
+        }
+
+        public void CrawlData(string ticker, Timeframe timeframe)
+        {
             IList<Candle> resultCandles = new List<Candle>();
             IList<Candle> allCandles = new List<Candle>();
             var iteration = 1;
@@ -24,7 +26,7 @@ namespace TradingBot.Core.DataCrawling
 
             do
             {
-                resultCandles = binanceMananger.GetData(ticker, Timeframe.FiveteenMinute, 1000, fixedDateTime.AddDays(-10 * iteration), fixedDateTime);
+                resultCandles = _binanceMananger.GetData(ticker, timeframe, 1000, fixedDateTime.AddDays(-10 * iteration), fixedDateTime);
                 if (allCandles.Any() && resultCandles.Last().Timestamp == allCandles.Last().Timestamp)
                 {
                     needToTerminate = true;
