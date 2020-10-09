@@ -17,8 +17,24 @@ namespace TestingConsole
     {
         static void Main(string[] args)
         {
-            //var candlesTillNow = binanceMananger.GetData(ticker, TradingBot.Core.Common.Timeframe.FiveteenMinute, 1000);
-            //var candlesTillYesterday = binanceMananger.GetData(ticker, TradingBot.Core.Common.Timeframe.FiveteenMinute, 1000, DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(-1));
+
+            /*
+            var exchange = new BinanceManager(
+                "",
+                ""); 
+            
+            BinanceDataCrawler crawler = new BinanceDataCrawler(exchange);
+            crawler.CrawlData("BTCUSDT", Timeframe.OneMinute);
+            crawler.CrawlData("BTCUSDT", Timeframe.FiveMinute);
+            crawler.CrawlData("BTCUSDT", Timeframe.FiveteenMinute);
+            crawler.CrawlData("BTCUSDT", Timeframe.ThirtyMinute);
+            crawler.CrawlData("BTCUSDT", Timeframe.OneHour);
+            crawler.CrawlData("BTCUSDT", Timeframe.SixHour);
+            crawler.CrawlData("BTCUSDT", Timeframe.TwelveHour);
+            crawler.CrawlData("BTCUSDT", Timeframe.OneDay);
+            crawler.CrawlData("BTCUSDT", Timeframe.SevenDay);
+            crawler.CrawlData("BTCUSDT", Timeframe.OneMonth);
+            */
 
 
             /*
@@ -28,12 +44,9 @@ namespace TestingConsole
                 Console.WriteLine(item);
             }*/
 
-            /*
-            BinanceDataCrawler crawler = new BinanceDataCrawler();
-            crawler.CrawlData();
-            */
 
-            var currentRunDateFrom = new DateTime(2019, 1, 1);
+            
+            var currentRunDateFrom = new DateTime(2020, 6, 2, 10, 30, 0);
             var currentRunDateTo = new DateTime(2020, 7, 20);
             var tester = new StrategyTester(false, new HistoryDataProducer(new StorageDataProvider(), 50));
             while (currentRunDateFrom <= currentRunDateTo)
@@ -74,6 +87,6 @@ namespace TestingConsole
                 Thread.Sleep(TimeSpan.FromSeconds(60));
             }
             */
-        }      
+        }
     }
 }
