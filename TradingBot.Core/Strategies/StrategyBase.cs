@@ -48,7 +48,7 @@ namespace TradingBot.Core.Strategies
 
             if (position.Direction == PositionDirection.Long)
             {
-                lastExtremum = ExtremumArea.GetLastMinimumBeforeSample(minimums, sample);
+                lastExtremum = ExtremumArea.GetLastMinimumBeforeAndWithSample(minimums, sample);
                 if (lastExtremum == null)
                 {
                     stopLossPrice = sample.Candle.Low - (position.OpenPrice - sample.Candle.Low) * StopLossAdditionalValuePercentage / 100;
@@ -60,7 +60,7 @@ namespace TradingBot.Core.Strategies
             }
             else if (position.Direction == PositionDirection.Short)
             {
-                lastExtremum = ExtremumArea.GetLastMaximumBeforeSample(maximums, sample);
+                lastExtremum = ExtremumArea.GetLastMaximumBeforeAndWithSample(maximums, sample);
                 if (lastExtremum == null)
                 {
                     stopLossPrice = sample.Candle.High + (sample.Candle.High - position.OpenPrice) * StopLossAdditionalValuePercentage / 100;
@@ -76,7 +76,7 @@ namespace TradingBot.Core.Strategies
         protected bool IsLastAreaVolumeMoreThanPrevious(IList<DataSample> samples, DataSample sample, decimal percentage, int samplesPerPrevArea, int samplesPerLastArea)
         {
             var indexOfSample = samples.IndexOf(sample);
-            var indexOfFirstSampleInLastArea = indexOfSample - samplesPerLastArea;
+            var indexOfFirstSampleInLastArea = indexOfSample - samplesPerLastArea + 1;
             if (indexOfFirstSampleInLastArea < 0)
                 return false;
 
@@ -86,7 +86,7 @@ namespace TradingBot.Core.Strategies
                 targetLastSamples.Add(samples[i]);
             }
 
-            var indexOfFirstSampleInPrevArea = indexOfFirstSampleInLastArea - 1 - samplesPerPrevArea;
+            var indexOfFirstSampleInPrevArea = indexOfFirstSampleInLastArea - samplesPerPrevArea;
             if (indexOfFirstSampleInPrevArea < 0)
                 return false;
 

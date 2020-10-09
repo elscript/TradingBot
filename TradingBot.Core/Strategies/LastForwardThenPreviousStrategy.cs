@@ -51,8 +51,8 @@ namespace TradingBot.Core
 
             var lastLocalMinimumPassed = false;
             var lastLocalMaximumPassed = false;
-            var lastMaximumBeforeSample = ExtremumArea.GetLastMaximumBeforeSample(localMaximums, sample);
-            var lastMinimumBeforeSample = ExtremumArea.GetLastMinimumBeforeSample(localMinimums, sample);
+            var lastMaximumBeforeSample = ExtremumArea.GetLastMaximumBeforeAndWithSample(localMaximums, sample);
+            var lastMinimumBeforeSample = ExtremumArea.GetLastMinimumBeforeAndWithSample(localMinimums, sample);
 
             if (lastMaximumBeforeSample != null && lastMinimumBeforeSample != null)
             {
@@ -102,8 +102,8 @@ namespace TradingBot.Core
 
             var lastLocalMinimumPassed = false;
             var lastLocalMaximumPassed = false;
-            var lastMaximumBeforeSample = ExtremumArea.GetLastMaximumBeforeSample(localMaximums, sample);
-            var lastMinimumBeforeSample = ExtremumArea.GetLastMinimumBeforeSample(localMinimums, sample);
+            var lastMaximumBeforeSample = ExtremumArea.GetLastMaximumBeforeAndWithSample(localMaximums, sample);
+            var lastMinimumBeforeSample = ExtremumArea.GetLastMinimumBeforeAndWithSample(localMinimums, sample);
 
             if (lastMaximumBeforeSample != null && lastMinimumBeforeSample != null)
             {
@@ -133,12 +133,12 @@ namespace TradingBot.Core
 
             if (position.Direction == PositionDirection.Long)
             {
-                lastExtremum = ExtremumArea.GetLastMinimumBeforeSample(minimums, sample);
+                lastExtremum = ExtremumArea.GetLastMinimumBeforeAndWithSample(minimums, sample);
                 stopLossPrice = lastExtremum.CurrentExtremum.Candle.Low - (position.OpenPrice - lastExtremum.CurrentExtremum.Candle.Low) * 10; //TODO убрать хардкод
             }
             else if (position.Direction == PositionDirection.Short)
             {
-                lastExtremum = ExtremumArea.GetLastMaximumBeforeSample(maximums, sample);
+                lastExtremum = ExtremumArea.GetLastMaximumBeforeAndWithSample(maximums, sample);
                 stopLossPrice = lastExtremum.CurrentExtremum.Candle.High + (lastExtremum.CurrentExtremum.Candle.High - position.OpenPrice) * 10; //TODO убрать хардкод
             }
             return stopLossPrice;

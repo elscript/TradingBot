@@ -30,7 +30,7 @@ namespace TestingConsole
             Console.WriteLine($"Ticker : {ticker}");
 
             var strategyPlayer = new HistoricalStrategyPlayer(
-                new VolumeStrategy(
+                new LongTailVolumeStrategy(
                     10,
                     3,
                     0.1m,
