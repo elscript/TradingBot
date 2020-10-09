@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TradingBot.Core.Common;
 
 namespace TradingBot.Core.Strategies
 {
@@ -13,6 +14,8 @@ namespace TradingBot.Core.Strategies
 
         public override SignalResult BuySignal(IList<DataSample> samples, DataSample sample, Position position)
         {
+            var levels = LevelsDeterminator.DeterminateLevels(samples).Where(lv => lv.TouchCount > 1);
+
             var indexOfSample = samples.IndexOf(sample);
             if (samples.Count() <= 3)
                 return new SignalResult()
@@ -30,7 +33,7 @@ namespace TradingBot.Core.Strategies
                 //&& (previousSample.CandleColor == Common.CandleColor.Red || previousSample.CandleColor == Common.CandleColor.Grey)
                 //&& sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open)
                 && IsLastAreaVolumeMoreThanPrevious(samples, previousSample, 50, 10, 1)
-                && IsSampleWithLongTail(previousSample, PositionDirection.Long, 0.15m))
+                && IsSampleWithLongTail(previousSample, PositionDirection.Long, 0.3m))
             {
                 if (position != null)
                 {
@@ -58,6 +61,8 @@ namespace TradingBot.Core.Strategies
 
         public override SignalResult SellSignal(IList<DataSample> samples, DataSample sample, Position position)
         {
+            var levels = LevelsDeterminator.DeterminateLevels(samples).Where(lv => lv.TouchCount > 1);
+
             var indexOfSample = samples.IndexOf(sample);
             if (samples.Count() <= 3)
                 return new SignalResult()
@@ -75,7 +80,7 @@ namespace TradingBot.Core.Strategies
                 //&& (previousSample.CandleColor == Common.CandleColor.Green || previousSample.CandleColor == Common.CandleColor.Grey)
                 //&& sample.Candle.Volume * Math.Abs(sample.Candle.Close - sample.Candle.Open) > previousSample.Candle.Volume * Math.Abs(previousSample.Candle.Close - previousSample.Candle.Open)
                 && IsLastAreaVolumeMoreThanPrevious(samples, previousSample, 50, 10, 1)
-                && IsSampleWithLongTail(previousSample, PositionDirection.Short, 0.15m))
+                && IsSampleWithLongTail(previousSample, PositionDirection.Short, 0.3m))
             {
                 if (position != null)
                 {

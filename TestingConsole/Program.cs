@@ -46,18 +46,18 @@ namespace TestingConsole
 
 
             
-            var currentRunDateFrom = new DateTime(2020, 6, 2, 10, 30, 0);
-            var currentRunDateTo = new DateTime(2020, 7, 20);
-            var tester = new StrategyTester(false, new HistoryDataProducer(new StorageDataProvider(), 50));
+            var currentRunDateFrom = new DateTime(2020, 9, 1, 0, 0, 0);
+            var currentRunDateTo = new DateTime(2020, 9, 3);
+            var tester = new StrategyTester(false, new HistoryDataProducer(new StorageDataProvider(), 1440));
             while (currentRunDateFrom <= currentRunDateTo)
             {
                 tester.Run(
                     "BTCUSDT",
-                    Timeframe.FiveteenMinute,
+                    Timeframe.OneMinute,
                     100,
                     0.004m,
                     currentRunDateFrom,
-                    new DateTime(2020, 7, 20)
+                    new DateTime(2020, 9, 3)
                     );
                 currentRunDateFrom = currentRunDateFrom.AddDays(1);
             }
