@@ -1,2 +1,2 @@
-﻿select MIN(TimeStamp), TimeFrame from Candles
+﻿select Max(TimeStamp), TimeFrame from Candles
 group by TimeFrame

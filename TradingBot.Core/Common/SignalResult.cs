@@ -9,5 +9,7 @@ namespace TradingBot.Core
         public bool ByStopLoss { get; set; }
 
         public bool SignalTriggered { get; set; }
+
+        public SignalPurpose Purpose { get; set; }
     }
 }

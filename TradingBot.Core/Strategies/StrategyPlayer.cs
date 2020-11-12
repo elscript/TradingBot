@@ -54,13 +54,15 @@ namespace TradingBot.Core
 
             if (Position == null)
             {
-                if (_strategy.BuySignal(samples, sample, null).SignalTriggered)
+                var strategyRunBuyResult = _strategy.BuySignal(samples, sample, null);
+                var strategyRunSellResult = _strategy.SellSignal(samples, sample, null);
+                if (strategyRunBuyResult.SignalTriggered && strategyRunBuyResult.Purpose == SignalPurpose.OpenPosition)
                 {
                     var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Long, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
                     OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount / sample.Candle.High);
                     SetStopLoss(samples, sample, Position);
                 }
-                else if (_strategy.SellSignal(samples, sample, null).SignalTriggered)
+                else if (strategyRunSellResult.SignalTriggered && strategyRunSellResult.Purpose == SignalPurpose.OpenPosition)
                 {
                     var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Short, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
                     OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount / sample.Candle.Low);
@@ -75,12 +77,12 @@ namespace TradingBot.Core
                 }
 
                 var signalResult = _strategy.SellSignal(samples, sample, Position);
-                if (signalResult.SignalTriggered)
+                if (signalResult.SignalTriggered && (signalResult.Purpose == SignalPurpose.ClosePosition || signalResult.Purpose == SignalPurpose.CloseAndOpenPosition))
                 {
                     if(Position != null)
                         ClosePosition(PositionDirection.Long, signalResult.ByStopLoss, sample);
 
-                    if (_strategy.AllowShort)
+                    if (_strategy.AllowShort && signalResult.Purpose == SignalPurpose.CloseAndOpenPosition)
                     {
                         var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Short, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
                         OpenPosition(PositionDirection.Short, sample, ticker, calculatedAmount / sample.Candle.Low);
@@ -96,12 +98,12 @@ namespace TradingBot.Core
                 }
 
                 var signalResult = _strategy.BuySignal(samples, sample, Position);
-                if (signalResult.SignalTriggered)
+                if (signalResult.SignalTriggered && (signalResult.Purpose == SignalPurpose.ClosePosition || signalResult.Purpose == SignalPurpose.CloseAndOpenPosition))
                 {
                     if (Position != null)
                         ClosePosition(PositionDirection.Short, signalResult.ByStopLoss, sample);
 
-                    if (_strategy.AllowLong)
+                    if (_strategy.AllowLong && signalResult.Purpose == SignalPurpose.CloseAndOpenPosition)
                     {
                         var calculatedAmount = _strategy.GetAmountForPosition(_strategy.GetStopLossPrice(samples, sample, new Position() { Direction = PositionDirection.Long, OpenPrice = sample.Candle.Close }), sample.Candle.Close, amount, MaximumLeverage);
                         OpenPosition(PositionDirection.Long, sample, ticker, calculatedAmount / sample.Candle.High);
